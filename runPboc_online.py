@@ -1,0 +1,2395 @@
+# coding:utf-8
+
+import pboc_features
+from model_handle import *
+import features_func
+import bh_data
+from new_bhData import *
+from main_score import *
+import datetime
+from dateutil.relativedelta import relativedelta
+from pandas import json_normalize
+from handle_third import *
+from joblib import Parallel, delayed, load, dump
+import sys
+sys.path.append(r'/home/youzhengjie/WorkHome/generalFunction')
+
+
+# 人行特征
+feature = [
+"loan_second_by03_classify5_giniimpurity",
+"loan_second_m24_ncycle_month60_State_num_mean_mean",
+"loan_rating_worst",
+"loan_second_hdue1R_month60_to_report_mean_min",
+"loan_second_by06_month60_Amount_num_mean_mean",
+"loan_second_by06_ncycle_month60_Amount_num_mean_mean",
+"age_idcard",
+"blacn_lac",
+"business_loan_amount_max",
+"business_loan_amount_sum",
+"card_second_m06_maxUsed_vs_sumAmount",
+"card_second_m12_sumUsed_vs_sumAmount",
+"CardCount_count",
+"CardCount_ratio",
+"clacn_lac",
+"consume_loan_account_count",
+"consume_loan_amount_sum_now",
+"consume_loan_balance_max_now",
+"consume_loan_planRepayAmount_max_now",
+"credit_tips_total_count",
+"creditCardCount_vs_TotalCount",
+"debit_card_five_years_normal_ratio",
+"debit_card_lastmonth_normal_balance_avg",
+"debit_card_lastmonth_normal_planRepayAmount_count",
+"debit_card_lastmonth_normal_repayedAmount_count",
+"debit_card_repayment_billday_count",
+"debit_card_repayment_m1_count",
+"debit_card_repayment_normal_ratio",
+"diploma",
+"first_loan_amount",
+"first_loan_time_till_now",
+"firstCreditCardMonth_to_report",
+"laco03_lacn",
+"laco06_lac",
+"lc_month60_Amount_num_mean",
+"lc_month60_C_count",
+"lc_month60_m01_C_ratio",
+"lc_month60_m01_N_ratio",
+"lc_month60_m01_Null_count",
+"lc_month60_m03_Amount_num_mean",
+"lc_month60_m03_N_count",
+"lc_month60_m03_Null_ratio",
+"lc_month60_m06_Amount_num_mean",
+"lc_month60_m06_C_ratio",
+"lc_month60_m06_N_count",
+"lc_month60_m06_N_ratio",
+"lc_month60_m06_Null_ratio",
+"lc_month60_m06_State_num_mean",
+"lc_month60_m12_C_count",
+"lc_month60_m12_C_ratio",
+"lc_month60_m12_N_count",
+"lc_month60_m12_N_ratio",
+"lc_month60_m12_Null_count",
+"lc_month60_m12_Null_ratio",
+"lc_month60_m12_State_num_mean",
+"lc_month60_m24_1_ratio",
+"lc_month60_m24_Amount_num_mean",
+"lc_month60_m24_C_count",
+"lc_month60_m24_N_count",
+"lc_month60_m24_State_giniimpurity",
+"lc_month60_m24_State_num_mean",
+"lc_month60_m36_1_ratio",
+"lc_month60_m36_Amount_num_mean",
+"lc_month60_m36_C_count",
+"lc_month60_m36_N_count",
+"lc_month60_m36_N_ratio",
+"lc_month60_m36_Null_count",
+"lc_month60_m36_Null_ratio",
+"lc_month60_m36_State_big0_mean",
+"lc_month60_m36_State_giniimpurity",
+"lc_month60_m48_C_count",
+"lc_month60_m48_N_count",
+"lc_month60_m48_Null_count",
+"lc_month60_m48_Null_ratio",
+"lc_month60_m48_State_num_mean",
+"lc_month60_m60_C_count",
+"lc_month60_m60_N_count",
+"lc_month60_m60_Null_count",
+"lc_month60_N_count",
+"lc_month60_N_ratio",
+"lc_month60_Null_count",
+"lc_month60_State_big0_mean",
+"liv_36m_cnt",
+"liveaddr_num",
+"ln_1m_expiresum",
+"loan_account_count",
+"loan_amount_sum_open_03m",
+"loan_card_amount_count",
+"loan_card_balance_mean",
+"loan_card_card_total_amount_ratio",
+"loan_card_credit_card_ratio",
+"loan_card_debt_total_amount_ratio",
+"loan_card_gm06_credit_card_ratio",
+"loan_card_gm06_other_consumer_ratio",
+"loan_card_gm06_planRepayAmount_count",
+"loan_card_gm06_remainingTerms_max",
+"loan_card_gm12_balance_max",
+"loan_card_gm12_credit_card_ratio",
+"loan_card_gm12_finance_lease_ratio",
+"loan_card_gm12_other_consumer_org_cnt",
+"loan_card_gm12_other_consumer_ratio",
+"loan_card_gm12_planRepayAmount_count",
+"loan_card_gm12_planRepayAmount_max",
+"loan_card_gm12_planRepayAmount_mean",
+"loan_card_gm12_remainingTerms_max",
+"loan_card_gm12_remainingTerms_sum",
+"loan_card_gm12_RepayedAmount_max",
+"loan_card_gm12_type_card_ratio",
+"loan_card_gm12_type_loan_ratio",
+"loan_card_loan_total_amount_ratio",
+"loan_card_m01_amount_count",
+"loan_card_m01_amount_maxCardVsMaxComsum",
+"loan_card_m01_comsum_amount_max",
+"loan_card_m01_comsumOrCard_amount_max",
+"loan_card_m01_operation_loan_ratio",
+"loan_card_m01_other_loan_ratio",
+"loan_card_m01_planRepayAmount_count",
+"loan_card_m01_planRepayAmount_max",
+"loan_card_m01_planRepayAmount_mean",
+"loan_card_m01_remainingTerms_max",
+"loan_card_m01_RepayedAmount_max",
+"loan_card_m01_RepayedAmount_mean",
+"loan_card_m01_RepayedAmount_sum",
+"loan_card_m01_startdata_min_to_report_days",
+"loan_card_m06_amount_count",
+"loan_card_m06_other_loan_org_cnt",
+"loan_card_m06_planRepayAmount_mean",
+"loan_card_m06_remainingTerms_max",
+"loan_card_m06_RepayedAmount_max",
+"loan_card_m06_RepayedAmount_mean",
+"loan_card_notcycle_avgRepaymentAmount_ratio",
+"loan_card_now_other_consumer_org_cnt",
+"loan_card_now_other_loan_count",
+"loan_card_now_other_loan_org_cnt",
+"loan_card_now_other_loan_ratio",
+"loan_card_now_planRepayAmount_max",
+"loan_card_now_planRepayAmount_mean",
+"loan_card_now_remainingTerms_sum",
+"loan_card_now_RepayedAmount_mean",
+"loan_card_other_consumer_count",
+"loan_card_other_consumer_org_cnt",
+"loan_card_other_consumer_ratio",
+"loan_card_other_loan_org_cnt",
+"loan_card_planRepayAmount_sum",
+"loan_card_r_card_ratio",
+"loan_card_r_finance_lease_ratio",
+"loan_card_r_guaranty_combine_nhave_count",
+"loan_card_r_guaranty_combine_nhave_ratio",
+"loan_card_r_guaranty_credit_no_count",
+"loan_card_r_guaranty_credit_no_ratio",
+"loan_card_r_guaranty_pledge_count",
+"loan_card_r_ncycle_count",
+"loan_card_r_other_consumer_count",
+"loan_card_RepayedAmount_count",
+"loan_card_RepayedAmount_max",
+"loan_card_RepayedAmount_mean",
+"loan_card_startdata_min_to_report_days",
+"loan_card_total_amount_sum",
+"loan_card_type_loan_count",
+"loan_card_type_loan_org_cnt",
+"loan_current_ndue_account_count",
+"loan_current_ndue_balance_sum",
+"loan_GrantOrg_CD",
+"loan_GrantOrg_CD_now",
+"loan_is_vouch_loanAmount_max",
+"loan_ndue_account_count",
+"loan_ndue_account_count_03m",
+"loan_ndue_account_count_24m",
+"loan_ndue_amount_sum",
+"loan_second_as_settle_count",
+"loan_second_balance_mean",
+"loan_second_bt_other_loan_ratio",
+"loan_second_bt_other_person_count",
+"loan_second_bt_other_person_ratio",
+"loan_second_businessType_giniimpurity",
+"loan_second_by03_accountStatus_giniimpurity",
+"loan_second_by03_balance_min",
+"loan_second_by03_byDate_to_report_mean",
+"loan_second_by03_gf_combine_nowarranty_ratio",
+"loan_second_by03_gf_crdit_count",
+"loan_second_by03_leftRepayTerms_range",
+"loan_second_by03_month60_State_countCr_max",
+"loan_second_by03_month60_State_countNull_mean",
+"loan_second_by03_month60_State_num_size_sum",
+"loan_second_by03_month60_to_report_max_range",
+"loan_second_by03_month60_to_report_mean_range",
+"loan_second_by03_month60_to_report_min_mean",
+"loan_second_by03_ncycle_balance_min",
+"loan_second_by03_ncycle_balance_ratio_mean",
+"loan_second_by03_ncycle_balance_ratio_range",
+"loan_second_by03_ncycle_bt_finance_lease_ratio",
+"loan_second_by03_ncycle_bt_other_loan_ratio",
+"loan_second_by03_ncycle_gf_crdit_ratio",
+"loan_second_by03_ncycle_leftRepayTerms_mean",
+"loan_second_by03_ncycle_month60_State_count2r_max",
+"loan_second_by03_ncycle_month60_State_count2r_sum",
+"loan_second_by03_ncycle_month60_State_count3r_max",
+"loan_second_by03_ncycle_month60_State_count3r_mean",
+"loan_second_by03_ncycle_month60_State_countC_sum",
+"loan_second_by03_ncycle_month60_State_countCr_sum",
+"loan_second_by03_ncycle_month60_State_countN_mean",
+"loan_second_by03_ncycle_month60_State_countN_sum",
+"loan_second_by03_ncycle_month60_State_countNullr_range",
+"loan_second_by03_ncycle_org_commercial_bank_ratio",
+"loan_second_by03_ncycle_org_consumer_finance_ratio",
+"loan_second_by03_ncycle_planRepayAmount_mean",
+"loan_second_by03_ncycle_planRepayAmount_range",
+"loan_second_by03_ncycle_repayAmt_max",
+"loan_second_by03_ncycle_repayedAmount_min",
+"loan_second_by03_ncycle_repayMons_mean",
+"loan_second_by03_ncycle_repayMons_range",
+"loan_second_by03_ncycle_repayTerms_mean",
+"loan_second_by03_ncycle_rf_month_ratio",
+"loan_second_by03_ncycle_rf_other_ratio",
+"loan_second_by03_ncycle_startDate_to_report_max",
+"loan_second_by03_ncycleR_balance_range",
+"loan_second_by03_ncycleR_month60_State_countN_max",
+"loan_second_by03_ncycleR_month60_State_countNr_max",
+"loan_second_by03_ncycleR_month60_State_countNull_max",
+"loan_second_by03_ncycleR_month60_State_num_size_sum",
+"loan_second_by03_ncycleR_month60_to_report_mean_sum",
+"loan_second_by03_ncycleR_startDate_to_report_sum",
+"loan_second_by03_now_balance_ratio_mean",
+"loan_second_by03_now_bt_other_person_ratio",
+"loan_second_by03_now_loanAmount_max",
+"loan_second_by03_now_loanGrantOrg_giniimpurity",
+"loan_second_by03_now_month60_State_count2_max",
+"loan_second_by03_now_month60_State_count2_mean",
+"loan_second_by03_now_month60_State_count2r_sum",
+"loan_second_by03_now_month60_State_countNr_range",
+"loan_second_by03_now_month60_State_countNullr_mean",
+"loan_second_by03_now_org_consumer_finance_count",
+"loan_second_by03_now_org_lease_finance_ratio",
+"loan_second_by03_now_repayTerm_ratio_min",
+"loan_second_by03_now_rf_month_ratio",
+"loan_second_by03_now_rf_other_count",
+"loan_second_by03_now_rt_unknow_count",
+"loan_second_by03_nowR_balance_range",
+"loan_second_by03_nowR_bt_other_person_count",
+"loan_second_by03_nowR_byDate_to_report_sum",
+"loan_second_by03_nowR_gf_crdit_ratio",
+"loan_second_by03_nowR_gf_other_ratio",
+"loan_second_by03_nowR_loanAmount_max",
+"loan_second_by03_nowR_loanAmount_min",
+"loan_second_by03_nowR_loanGrantOrg_nunique",
+"loan_second_by03_nowR_month60_State_countC_mean",
+"loan_second_by03_nowR_month60_State_countN_mean",
+"loan_second_by03_nowR_month60_State_countNull_sum",
+"loan_second_by03_nowR_month60_State_countNullr_max",
+"loan_second_by03_nowR_month60_State_countNullr_mean",
+"loan_second_by03_nowR_month60_State_countNullr_range",
+"loan_second_by03_nowR_month60_State_num_size_max",
+"loan_second_by03_nowR_month60_State_num_size_range",
+"loan_second_by03_nowR_month60_to_report_max_mean",
+"loan_second_by03_nowR_month60_to_report_max_range",
+"loan_second_by03_nowR_month60_to_report_mean_mean",
+"loan_second_by03_nowR_month60_to_report_mean_range",
+"loan_second_by03_nowR_month60_to_report_min_mean",
+"loan_second_by03_nowR_month60_to_report_min_sum",
+"loan_second_by03_nowR_org_commercial_bank_ratio",
+"loan_second_by03_nowR_org_consumer_finance_count",
+"loan_second_by03_nowR_org_consumer_finance_ratio",
+"loan_second_by03_nowR_org_micro_loan_count",
+"loan_second_by03_nowR_planRepayAmount_range",
+"loan_second_by03_nowR_repayAmt_max",
+"loan_second_by03_nowR_repayAmt_range",
+"loan_second_by03_nowR_repayedAmount_range",
+"loan_second_by03_nowR_repayFrequency_giniimpurity",
+"loan_second_by03_nowR_repayMons_range",
+"loan_second_by03_nowR_repayMons_ratio_max",
+"loan_second_by03_nowR_repayMons_ratio_range",
+"loan_second_by03_nowR_repayMons_sum",
+"loan_second_by03_nowR_repayTerms_sum",
+"loan_second_by03_nowR_rf_other_count",
+"loan_second_by03_nowR_startDate_to_report_max",
+"loan_second_by03_nowR_startDate_to_report_mean",
+"loan_second_by03_org_micro_loan_ratio",
+"loan_second_by03_org_other_ratio",
+"loan_second_by03_planRepayAmount_max",
+"loan_second_by03_planRepayAmount_mean",
+"loan_second_by03_repayAmt_mean",
+"loan_second_by03_repayTerm_ratio_min",
+"loan_second_by03_rf_month_ratio",
+"loan_second_by03_startDate_to_report_max",
+"loan_second_by03_startDate_to_report_mean",
+"loan_second_by03_startDate_to_report_sum",
+"loan_second_by03_vouchR_month60_to_report_mean_sum",
+"loan_second_by06_bt_other_person_ratio",
+"loan_second_by06_byDate_to_report_sum",
+"loan_second_by06_classify5_giniimpurity",
+"loan_second_by06_classify5_num_range",
+"loan_second_by06_cycleR_repayMons_ratio_sum",
+"loan_second_by06_hdue1_month60_State_num_mean_mean",
+"loan_second_by06_hdue1R_month60_State_countNull_sum",
+"loan_second_by06_hdue1R_month60_State_countNullr_sum",
+"loan_second_by06_hdue1R_repayMons_ratio_sum",
+"loan_second_by06_month60_State_countCr_max",
+"loan_second_by06_month60_State_countN_range",
+"loan_second_by06_month60_State_countN_sum",
+"loan_second_by06_month60_State_countNr_range",
+"loan_second_by06_month60_State_countNull_mean",
+"loan_second_by06_month60_State_countUnknow_mean",
+"loan_second_by06_month60_State_countUnknowr_mean",
+"loan_second_by06_month60_State_num_size_sum",
+"loan_second_by06_month60_to_report_max_sum",
+"loan_second_by06_month60_to_report_mean_max",
+"loan_second_by06_month60_to_report_mean_range",
+"loan_second_by06_ncycle_balance_max",
+"loan_second_by06_ncycle_balance_ratio_mean",
+"loan_second_by06_ncycle_bt_other_loan_count",
+"loan_second_by06_ncycle_bt_person_business_ratio",
+"loan_second_by06_ncycle_byDate_to_report_mean",
+"loan_second_by06_ncycle_classify5_num_range",
+"loan_second_by06_ncycle_gf_combine_nowarranty_ratio",
+"loan_second_by06_ncycle_gf_other_ratio",
+"loan_second_by06_ncycle_is_now_min",
+"loan_second_by06_ncycle_month60_State_count2_max",
+"loan_second_by06_ncycle_month60_State_countCr_max",
+"loan_second_by06_ncycle_month60_State_countCr_mean",
+"loan_second_by06_ncycle_month60_State_countCr_range",
+"loan_second_by06_ncycle_month60_State_countN_sum",
+"loan_second_by06_ncycle_month60_State_countNull_sum",
+"loan_second_by06_ncycle_month60_State_countUnknow_mean",
+"loan_second_by06_ncycle_month60_State_countUnknowr_mean",
+"loan_second_by06_ncycle_month60_to_report_max_sum",
+"loan_second_by06_ncycle_month60_to_report_mean_mean",
+"loan_second_by06_ncycle_month60_to_report_mean_range",
+"loan_second_by06_ncycle_month60_to_report_min_mean",
+"loan_second_by06_ncycle_org_commercial_bank_count",
+"loan_second_by06_ncycle_org_commercial_bank_ratio",
+"loan_second_by06_ncycle_org_giniimpurity",
+"loan_second_by06_ncycle_org_other_ratio",
+"loan_second_by06_ncycle_repayAmt_mean",
+"loan_second_by06_ncycle_repayAmt_range",
+"loan_second_by06_ncycle_repayedAmount_mean",
+"loan_second_by06_ncycle_repayMons_mean",
+"loan_second_by06_ncycle_repayMons_range",
+"loan_second_by06_ncycle_repayMons_ratio_range",
+"loan_second_by06_ncycle_repayMons_sum",
+"loan_second_by06_ncycle_repayTerm_ratio_min",
+"loan_second_by06_ncycle_repayTerm_ratio_range",
+"loan_second_by06_ncycle_rf_other_count",
+"loan_second_by06_ncycle_rf_other_ratio",
+"loan_second_by06_ncycle_rt_unknow_count",
+"loan_second_by06_ncycle_startDate_to_report_sum",
+"loan_second_by06_ncycleR_balance_range",
+"loan_second_by06_ncycleR_month60_State_countNullr_sum",
+"loan_second_by06_ncycleR_RepayedAmount_ratio_max",
+"loan_second_by06_ncycleR_repayTerm_ratio_max",
+"loan_second_by06_now_balance_ratio_mean",
+"loan_second_by06_now_bt_other_loan_count",
+"loan_second_by06_now_byDate_to_report_mean",
+"loan_second_by06_now_month60_State_countN_mean",
+"loan_second_by06_now_month60_State_countNr_range",
+"loan_second_by06_now_month60_State_num_size_mean",
+"loan_second_by06_now_org_commercial_bank_count",
+"loan_second_by06_now_org_myself_count",
+"loan_second_by06_now_planRepayAmount_sum",
+"loan_second_by06_now_rf_other_ratio",
+"loan_second_by06_now_rt_unknow_count",
+"loan_second_by06_now_startDate_to_report_range",
+"loan_second_by06_nowR_balance_ratio_range",
+"loan_second_by06_nowR_bt_other_person_ratio",
+"loan_second_by06_nowR_byDate_to_report_mean",
+"loan_second_by06_nowR_byDate_to_report_sum",
+"loan_second_by06_nowR_gf_combine_nowarranty_ratio",
+"loan_second_by06_nowR_gf_other_ratio",
+"loan_second_by06_nowR_guaranteeForm_giniimpurity",
+"loan_second_by06_nowR_loanAmount_range",
+"loan_second_by06_nowR_loanGrantOrg_giniimpurity",
+"loan_second_by06_nowR_loanGrantOrg_nunique",
+"loan_second_by06_nowR_month60_State_countN_max",
+"loan_second_by06_nowR_month60_State_countNull_mean",
+"loan_second_by06_nowR_month60_State_countNullr_mean",
+"loan_second_by06_nowR_month60_State_countUnknowr_mean",
+"loan_second_by06_nowR_month60_to_report_max_max",
+"loan_second_by06_nowR_month60_to_report_max_mean",
+"loan_second_by06_nowR_month60_to_report_max_range",
+"loan_second_by06_nowR_month60_to_report_max_sum",
+"loan_second_by06_nowR_month60_to_report_mean_max",
+"loan_second_by06_nowR_month60_to_report_mean_mean",
+"loan_second_by06_nowR_month60_to_report_mean_range",
+"loan_second_by06_nowR_month60_to_report_min_sum",
+"loan_second_by06_nowR_org_commercial_bank_count",
+"loan_second_by06_nowR_org_commercial_bank_ratio",
+"loan_second_by06_nowR_repayAmt_max",
+"loan_second_by06_nowR_repayAmt_range",
+"loan_second_by06_nowR_repayMons_ratio_mean",
+"loan_second_by06_nowR_repayMons_ratio_range",
+"loan_second_by06_nowR_rf_month_ratio",
+"loan_second_by06_nowR_rf_once_ratio",
+"loan_second_by06_nowR_startDate_to_report_max",
+"loan_second_by06_nowR_startDate_to_report_range",
+"loan_second_by06_org_commercial_bank_ratio",
+"loan_second_by06_org_micro_loan_ratio",
+"loan_second_by06_org_other_ratio",
+"loan_second_by06_repayAmt_mean",
+"loan_second_by06_repayedAmount_sum",
+"loan_second_by06_repayMons_mean",
+"loan_second_by06_repayMons_ratio_mean",
+"loan_second_by06_repayMons_ratio_sum",
+"loan_second_by06_repayTerm_ratio_min",
+"loan_second_by06_repayTerms_range",
+"loan_second_by06_rf_other_ratio",
+"loan_second_by06_startDate_to_report_range",
+"loan_second_by06_startDate_to_report_sum",
+"loan_second_by06_vouch_loanAmount_sum",
+"loan_second_by06_vouchR_loanGrantOrg_nunique",
+"loan_second_by06_vouchR_month60_State_num_size_sum",
+"loan_second_by06_vouchR_repayTerm_ratio_min",
+"loan_second_by12_accountStatus_giniimpurity",
+"loan_second_by12_as_settle_count",
+"loan_second_by12_balance_min",
+"loan_second_by12_balance_ratio_range",
+"loan_second_by12_bt_other_loan_count",
+"loan_second_by12_byDate_to_report_max",
+"loan_second_by12_byDate_to_report_mean",
+"loan_second_by12_byDate_to_report_sum",
+"loan_second_by12_c5_unknow_count",
+"loan_second_by12_c5_unknow_ratio",
+"loan_second_by12_class_ncycle_count",
+"loan_second_by12_classify5_num_sum",
+"loan_second_by12_gf_combine_nowarranty_ratio",
+"loan_second_by12_gf_crdit_count",
+"loan_second_by12_hdue1_month60_State_countNr_mean",
+"loan_second_by12_hdue1R_bt_other_person_count",
+"loan_second_by12_hdue1R_loanGrantOrg_nunique",
+"loan_second_by12_hdue1R_month60_State_countNullr_sum",
+"loan_second_by12_hdue1R_month60_State_num_max_mean",
+"loan_second_by12_hdue1R_month60_to_report_mean_min",
+"loan_second_by12_hdue1R_repayAmt_sum",
+"loan_second_by12_hdue1R_repayMons_ratio_sum",
+"loan_second_by12_leftRepayTerms_min",
+"loan_second_by12_loanAmount_range",
+"loan_second_by12_loanGrantOrg_nunique",
+"loan_second_by12_month60_Amount_num_mean_mean",
+"loan_second_by12_month60_Amount_num_sum_mean",
+"loan_second_by12_month60_State_count1r_mean",
+"loan_second_by12_month60_State_countCr_mean",
+"loan_second_by12_month60_State_countN_max",
+"loan_second_by12_month60_State_countN_mean",
+"loan_second_by12_month60_State_countN_sum",
+"loan_second_by12_month60_State_countNr_range",
+"loan_second_by12_month60_State_countNr_sum",
+"loan_second_by12_month60_State_countNull_max",
+"loan_second_by12_month60_State_countNull_sum",
+"loan_second_by12_month60_State_countNullr_range",
+"loan_second_by12_month60_State_num_size_mean",
+"loan_second_by12_month60_State_num_sum_mean",
+"loan_second_by12_month60_to_report_max_mean",
+"loan_second_by12_month60_to_report_mean_max",
+"loan_second_by12_month60_to_report_min_max",
+"loan_second_by12_month60_to_report_min_sum",
+"loan_second_by12_ncycle_balance_min",
+"loan_second_by12_ncycle_balance_ratio_max",
+"loan_second_by12_ncycle_balance_ratio_mean",
+"loan_second_by12_ncycle_balance_ratio_min",
+"loan_second_by12_ncycle_byDate_to_report_max",
+"loan_second_by12_ncycle_byDate_to_report_sum",
+"loan_second_by12_ncycle_class_ncycle_count",
+"loan_second_by12_ncycle_classify5_giniimpurity",
+"loan_second_by12_ncycle_gf_combine_nowarranty_ratio",
+"loan_second_by12_ncycle_guaranteeForm_giniimpurity",
+"loan_second_by12_ncycle_leftRepayTerms_mean",
+"loan_second_by12_ncycle_loanAmount_range",
+"loan_second_by12_ncycle_month60_Amount_num_mean_mean",
+"loan_second_by12_ncycle_month60_State_count1_mean",
+"loan_second_by12_ncycle_month60_State_count1r_mean",
+"loan_second_by12_ncycle_month60_State_countCr_mean",
+"loan_second_by12_ncycle_month60_State_countN_mean",
+"loan_second_by12_ncycle_month60_State_countN_sum",
+"loan_second_by12_ncycle_month60_State_countNr_mean",
+"loan_second_by12_ncycle_month60_State_countNr_sum",
+"loan_second_by12_ncycle_month60_State_countNullr_sum",
+"loan_second_by12_ncycle_month60_State_countUnknow_max",
+"loan_second_by12_ncycle_month60_State_num_mean_mean",
+"loan_second_by12_ncycle_month60_State_num_size_mean",
+"loan_second_by12_ncycle_month60_State_num_sum_mean",
+"loan_second_by12_ncycle_month60_to_report_max_mean",
+"loan_second_by12_ncycle_month60_to_report_mean_max",
+"loan_second_by12_ncycle_month60_to_report_mean_sum",
+"loan_second_by12_ncycle_month60_to_report_min_max",
+"loan_second_by12_ncycle_month60_to_report_min_sum",
+"loan_second_by12_ncycle_org_commercial_bank_ratio",
+"loan_second_by12_ncycle_org_micro_loan_count",
+"loan_second_by12_ncycle_org_micro_loan_ratio",
+"loan_second_by12_ncycle_org_myself_count",
+"loan_second_by12_ncycle_org_trust_company_ratio",
+"loan_second_by12_ncycle_repayAmt_mean",
+"loan_second_by12_ncycle_repayAmt_range",
+"loan_second_by12_ncycle_repayedAmount_sum",
+"loan_second_by12_ncycle_repayMons_ratio_mean",
+"loan_second_by12_ncycle_repayMons_ratio_range",
+"loan_second_by12_ncycle_repayTerm_ratio_mean",
+"loan_second_by12_ncycle_repayTerm_ratio_range",
+"loan_second_by12_ncycle_repayTerms_mean",
+"loan_second_by12_ncycle_rf_month_count",
+"loan_second_by12_ncycle_rf_month_ratio",
+"loan_second_by12_ncycle_rf_other_ratio",
+"loan_second_by12_ncycle_startDate_to_report_max",
+"loan_second_by12_ncycle_startDate_to_report_mean",
+"loan_second_by12_ncycle_startDate_to_report_range",
+"loan_second_by12_ncycleR_month60_State_countNull_sum",
+"loan_second_by12_ncycleR_month60_State_countUnknowr_max",
+"loan_second_by12_ncycleR_org_giniimpurity",
+"loan_second_by12_now_balance_ratio_mean",
+"loan_second_by12_now_balance_ratio_min",
+"loan_second_by12_now_balance_ratio_range",
+"loan_second_by12_now_bt_other_loan_ratio",
+"loan_second_by12_now_byDate_to_report_mean",
+"loan_second_by12_now_classify5_num_range",
+"loan_second_by12_now_gf_other_ratio",
+"loan_second_by12_now_month60_State_countN_mean",
+"loan_second_by12_now_month60_State_countNull_mean",
+"loan_second_by12_now_repayAmt_max",
+"loan_second_by12_now_repayAmt_min",
+"loan_second_by12_now_repayedAmount_mean",
+"loan_second_by12_now_repayMons_ratio_mean",
+"loan_second_by12_now_repayTerm_ratio_range",
+"loan_second_by12_now_rf_other_count",
+"loan_second_by12_nowR_bt_other_loan_count",
+"loan_second_by12_nowR_byDate_to_report_mean",
+"loan_second_by12_nowR_loanAmount_max",
+"loan_second_by12_nowR_loanAmount_mean",
+"loan_second_by12_nowR_loanAmount_sum",
+"loan_second_by12_nowR_loanGrantOrg_nunique",
+"loan_second_by12_nowR_month60_State_countN_sum",
+"loan_second_by12_nowR_month60_State_countNull_max",
+"loan_second_by12_nowR_month60_State_countNull_sum",
+"loan_second_by12_nowR_month60_State_countUnknow_mean",
+"loan_second_by12_nowR_month60_State_num_size_mean",
+"loan_second_by12_nowR_month60_State_num_size_range",
+"loan_second_by12_nowR_month60_to_report_mean_mean",
+"loan_second_by12_nowR_month60_to_report_mean_range",
+"loan_second_by12_nowR_month60_to_report_min_mean",
+"loan_second_by12_nowR_org_commercial_bank_count",
+"loan_second_by12_nowR_org_commercial_bank_ratio",
+"loan_second_by12_nowR_org_consumer_finance_ratio",
+"loan_second_by12_nowR_org_micro_loan_count",
+"loan_second_by12_nowR_planRepayAmount_range",
+"loan_second_by12_nowR_repayAmt_max",
+"loan_second_by12_nowR_repayAmt_range",
+"loan_second_by12_nowR_repayAmt_sum",
+"loan_second_by12_nowR_repayFrequency_giniimpurity",
+"loan_second_by12_nowR_repayMons_max",
+"loan_second_by12_nowR_repayMons_ratio_mean",
+"loan_second_by12_nowR_repayTerms_sum",
+"loan_second_by12_nowR_startDate_to_report_mean",
+"loan_second_by12_nowR_startDate_to_report_range",
+"loan_second_by12_org_consumer_finance_count",
+"loan_second_by12_org_consumer_finance_ratio",
+"loan_second_by12_org_micro_loan_ratio",
+"loan_second_by12_org_trust_company_ratio",
+"loan_second_by12_repayAmt_max",
+"loan_second_by12_repayFrequency_giniimpurity",
+"loan_second_by12_repayMons_max",
+"loan_second_by12_repayMons_ratio_mean",
+"loan_second_by12_repayMons_ratio_sum",
+"loan_second_by12_repayTerm_ratio_mean",
+"loan_second_by12_repayTerm_ratio_range",
+"loan_second_by12_repayTerms_max",
+"loan_second_by12_repayTerms_mean",
+"loan_second_by12_rf_month_ratio",
+"loan_second_by12_rf_other_ratio",
+"loan_second_by12_vouch_loanAmount_min",
+"loan_second_by12_vouch_org_micro_loan_ratio",
+"loan_second_by12_vouch_repayAmt_min",
+"loan_second_by12_vouchR_loanGrantOrg_nunique",
+"loan_second_by12_vouchR_month60_State_countNr_sum",
+"loan_second_by12_vouchR_month60_State_countNullr_sum",
+"loan_second_by12_vouchR_month60_to_report_mean_sum",
+"loan_second_by12_vouchR_org_micro_loan_ratio",
+"loan_second_by12_vouchR_repayMons_ratio_mean",
+"loan_second_byDate_to_report_sum",
+"loan_second_c5_unknow_count",
+"loan_second_class_ncycle_count",
+"loan_second_class_ncycle_ratio",
+"loan_second_cycle_repayTerms_range",
+"loan_second_cycleR_month60_State_countNull_sum",
+"loan_second_gf_crdit_count",
+"loan_second_gf_other_ratio",
+"loan_second_hdue1_month60_Amount_num_max_mean",
+"loan_second_hdue1_month60_Amount_num_mean_mean",
+"loan_second_hdue1_month60_State_count1r_min",
+"loan_second_hdue1_month60_State_countN_sum",
+"loan_second_hdue1_month60_State_countNr_min",
+"loan_second_hdue1_month60_State_num_mean_mean",
+"loan_second_hdue1_month60_State_num_mean_min",
+"loan_second_hdue1_month60_State_num_size_min",
+"loan_second_hdue1_month60_to_report_max_min",
+"loan_second_hdue1_month60_to_report_mean_max",
+"loan_second_hdue1_month60_to_report_mean_mean",
+"loan_second_hdue1_repayAmt_mean",
+"loan_second_hdue1_repayMons_ratio_mean",
+"loan_second_hdue1R_class_ncycle_count",
+"loan_second_hdue1R_loanAmount_mean",
+"loan_second_hdue1R_loanGrantOrg_nunique",
+"loan_second_hdue1R_month60_State_countCr_sum",
+"loan_second_hdue1R_month60_State_countN_sum",
+"loan_second_hdue1R_month60_State_countNr_sum",
+"loan_second_hdue1R_month60_State_countNullr_sum",
+"loan_second_hdue1R_month60_to_report_max_min",
+"loan_second_hdue1R_month60_to_report_max_range",
+"loan_second_hdue1R_month60_to_report_mean_max",
+"loan_second_hdue1R_org_micro_loan_ratio",
+"loan_second_hdue1R_org_trust_company_ratio",
+"loan_second_hdue1R_repayMons_ratio_min",
+"loan_second_hdue1R_repayTerms_sum",
+"loan_second_hdue1R_rt_unknow_count",
+"loan_second_hdue1R_startDate_to_report_max",
+"loan_second_leftRepayTerms_min",
+"loan_second_loanGrantOrg_giniimpurity",
+"loan_second_loanGrantOrg_nunique",
+"loan_second_m06_balance_ratio_mean",
+"loan_second_m06_businessType_giniimpurity",
+"loan_second_m06_byDate_to_report_mean",
+"loan_second_m06_guaranteeForm_giniimpurity",
+"loan_second_m06_leftRepayTerms_range",
+"loan_second_m06_loanAmount_min",
+"loan_second_m06_month60_Amount_num_mean_max",
+"loan_second_m06_month60_Amount_num_sum_max",
+"loan_second_m06_month60_State_countCr_mean",
+"loan_second_m06_month60_State_countNull_mean",
+"loan_second_m06_month60_State_countNullr_mean",
+"loan_second_m06_month60_State_num_mean_mean",
+"loan_second_m06_month60_to_report_max_range",
+"loan_second_m06_month60_to_report_mean_mean",
+"loan_second_m06_ncycle_balance_min",
+"loan_second_m06_ncycle_balance_ratio_max",
+"loan_second_m06_ncycle_balance_ratio_mean",
+"loan_second_m06_ncycle_balance_ratio_min",
+"loan_second_m06_ncycle_balance_ratio_range",
+"loan_second_m06_ncycle_byDate_to_report_mean",
+"loan_second_m06_ncycle_due_class_mean",
+"loan_second_m06_ncycle_guaranteeForm_giniimpurity",
+"loan_second_m06_ncycle_leftRepayTerms_max",
+"loan_second_m06_ncycle_loanAmount_min",
+"loan_second_m06_ncycle_month60_Amount_num_max_max",
+"loan_second_m06_ncycle_month60_Amount_num_sum_mean",
+"loan_second_m06_ncycle_month60_State_countCr_mean",
+"loan_second_m06_ncycle_month60_State_countNr_mean",
+"loan_second_m06_ncycle_month60_State_countNullr_mean",
+"loan_second_m06_ncycle_month60_State_num_max_sum",
+"loan_second_m06_ncycle_month60_State_num_mean_max",
+"loan_second_m06_ncycle_month60_State_num_size_sum",
+"loan_second_m06_ncycle_month60_to_report_max_mean",
+"loan_second_m06_ncycle_month60_to_report_mean_sum",
+"loan_second_m06_ncycle_org_commercial_bank_ratio",
+"loan_second_m06_ncycle_org_consumer_finance_ratio",
+"loan_second_m06_ncycle_org_giniimpurity",
+"loan_second_m06_ncycle_org_other_ratio",
+"loan_second_m06_ncycle_repayedAmount_max",
+"loan_second_m06_ncycle_repayedAmount_mean",
+"loan_second_m06_ncycle_repayedAmount_sum",
+"loan_second_m06_ncycle_repayFrequency_giniimpurity",
+"loan_second_m06_ncycle_repayMons_ratio_min",
+"loan_second_m06_ncycle_repayTerm_ratio_range",
+"loan_second_m06_ncycle_startDate_to_report_mean",
+"loan_second_m06_ncycleR_guaranteeForm_giniimpurity",
+"loan_second_m06_ncycleR_repayTerms_mean",
+"loan_second_m06_now_balance_ratio_mean",
+"loan_second_m06_now_balance_ratio_range",
+"loan_second_m06_now_bt_other_loan_ratio",
+"loan_second_m06_now_businessType_giniimpurity",
+"loan_second_m06_now_c5_normal_ratio",
+"loan_second_m06_now_due_class_max",
+"loan_second_m06_now_due_class_mean",
+"loan_second_m06_now_gf_other_ratio",
+"loan_second_m06_now_is_now_sum",
+"loan_second_m06_now_leftRepayTerms_mean",
+"loan_second_m06_now_leftRepayTerms_range",
+"loan_second_m06_now_loanAmount_min",
+"loan_second_m06_now_month60_Amount_num_mean_sum",
+"loan_second_m06_now_month60_Amount_num_meanbig0_sum",
+"loan_second_m06_now_month60_Amount_num_sum_max",
+"loan_second_m06_now_month60_State_count1r_mean",
+"loan_second_m06_now_month60_State_countNr_mean",
+"loan_second_m06_now_month60_State_countNull_mean",
+"loan_second_m06_now_month60_State_countNullr_mean",
+"loan_second_m06_now_month60_State_num_sum_sum",
+"loan_second_m06_now_month60_to_report_max_mean",
+"loan_second_m06_now_month60_to_report_mean_mean",
+"loan_second_m06_now_org_giniimpurity",
+"loan_second_m06_now_org_other_ratio",
+"loan_second_m06_now_org_trust_company_ratio",
+"loan_second_m06_now_planRepayAmount_mean",
+"loan_second_m06_now_planRepayAmount_min",
+"loan_second_m06_now_repayedAmount_max",
+"loan_second_m06_now_repayedAmount_mean",
+"loan_second_m06_now_repayedAmount_range",
+"loan_second_m06_now_repayedAmount_sum",
+"loan_second_m06_now_repayMons_range",
+"loan_second_m06_now_repayTerms_range",
+"loan_second_m06_now_rf_once_ratio",
+"loan_second_m06_now_rt_onschedule_ratio",
+"loan_second_m06_now_startDate_to_report_mean",
+"loan_second_m06_nowR_balance_range",
+"loan_second_m06_nowR_balance_ratio_range",
+"loan_second_m06_nowR_bt_other_loan_ratio",
+"loan_second_m06_nowR_businessType_giniimpurity",
+"loan_second_m06_nowR_byDate_to_report_mean",
+"loan_second_m06_nowR_byDate_to_report_sum",
+"loan_second_m06_nowR_month60_State_countNull_mean",
+"loan_second_m06_nowR_month60_State_countNullr_mean",
+"loan_second_m06_nowR_month60_State_num_size_min",
+"loan_second_m06_nowR_month60_to_report_max_mean",
+"loan_second_m06_nowR_month60_to_report_mean_max",
+"loan_second_m06_nowR_month60_to_report_mean_mean",
+"loan_second_m06_nowR_month60_to_report_mean_range",
+"loan_second_m06_nowR_month60_to_report_mean_sum",
+"loan_second_m06_nowR_month60_to_report_min_max",
+"loan_second_m06_nowR_org_giniimpurity",
+"loan_second_m06_nowR_repayAmt_max",
+"loan_second_m06_nowR_repayAmt_mean",
+"loan_second_m06_nowR_repayMons_mean",
+"loan_second_m06_nowR_repayMons_min",
+"loan_second_m06_nowR_repayMons_range",
+"loan_second_m06_nowR_repayMons_ratio_mean",
+"loan_second_m06_nowR_repayMons_ratio_range",
+"loan_second_m06_nowR_repayMons_sum",
+"loan_second_m06_nowR_repayTerms_mean",
+"loan_second_m06_nowR_startDate_to_report_mean",
+"loan_second_m06_org_consumer_finance_count",
+"loan_second_m06_org_consumer_finance_ratio",
+"loan_second_m06_org_micro_loan_ratio",
+"loan_second_m06_org_other_ratio",
+"loan_second_m06_repayAmt_range",
+"loan_second_m06_repayedAmount_max",
+"loan_second_m06_repayedAmount_mean",
+"loan_second_m06_repayMons_ratio_mean",
+"loan_second_m06_startDate_to_report_mean",
+"loan_second_m12_balance_ratio_min",
+"loan_second_m12_bt_other_person_ratio",
+"loan_second_m12_businessType_giniimpurity",
+"loan_second_m12_classify5_num_range",
+"loan_second_m12_gf_combine_nowarranty_ratio",
+"loan_second_m12_gf_other_ratio",
+"loan_second_m12_month60_Amount_num_max_sum",
+"loan_second_m12_month60_Amount_num_mean_mean",
+"loan_second_m12_month60_Amount_num_meanbig0_sum",
+"loan_second_m12_month60_Amount_num_sum_max",
+"loan_second_m12_month60_Amount_num_sum_mean",
+"loan_second_m12_month60_State_count1r_max",
+"loan_second_m12_month60_State_countCr_mean",
+"loan_second_m12_month60_State_countN_mean",
+"loan_second_m12_month60_State_countNr_range",
+"loan_second_m12_month60_State_countUnknowr_mean",
+"loan_second_m12_month60_State_num_mean_max",
+"loan_second_m12_month60_State_num_mean_mean",
+"loan_second_m12_month60_State_num_size_mean",
+"loan_second_m12_month60_State_num_size_range",
+"loan_second_m12_month60_State_num_size_sum",
+"loan_second_m12_month60_State_num_sum_max",
+"loan_second_m12_month60_State_num_sum_mean",
+"loan_second_m12_month60_to_report_max_mean",
+"loan_second_m12_ncycle_balance_max",
+"loan_second_m12_ncycle_balance_ratio_max",
+"loan_second_m12_ncycle_balance_ratio_mean",
+"loan_second_m12_ncycle_balance_ratio_min",
+"loan_second_m12_ncycle_balance_ratio_range",
+"loan_second_m12_ncycle_balance_sum",
+"loan_second_m12_ncycle_bt_other_loan_ratio",
+"loan_second_m12_ncycle_bt_other_person_count",
+"loan_second_m12_ncycle_byDate_to_report_max",
+"loan_second_m12_ncycle_byDate_to_report_mean",
+"loan_second_m12_ncycle_classify5_num_range",
+"loan_second_m12_ncycle_due_class_max",
+"loan_second_m12_ncycle_gf_combine_nowarranty_ratio",
+"loan_second_m12_ncycle_gf_crdit_ratio",
+"loan_second_m12_ncycle_guaranteeForm_giniimpurity",
+"loan_second_m12_ncycle_leftRepayTerms_max",
+"loan_second_m12_ncycle_loanGrantOrg_nunique",
+"loan_second_m12_ncycle_month60_Amount_num_mean_mean",
+"loan_second_m12_ncycle_month60_State_count1r_mean",
+"loan_second_m12_ncycle_month60_State_count2r_mean",
+"loan_second_m12_ncycle_month60_State_countCr_mean",
+"loan_second_m12_ncycle_month60_State_countNr_mean",
+"loan_second_m12_ncycle_month60_State_countNr_range",
+"loan_second_m12_ncycle_month60_State_num_max_mean",
+"loan_second_m12_ncycle_month60_State_num_max_sum",
+"loan_second_m12_ncycle_month60_State_num_mean_max",
+"loan_second_m12_ncycle_month60_State_num_mean_mean",
+"loan_second_m12_ncycle_month60_State_num_sum_max",
+"loan_second_m12_ncycle_month60_State_num_sum_mean",
+"loan_second_m12_ncycle_month60_to_report_mean_range",
+"loan_second_m12_ncycle_org_consumer_finance_count",
+"loan_second_m12_ncycle_org_micro_loan_ratio",
+"loan_second_m12_ncycle_org_other_ratio",
+"loan_second_m12_ncycle_org_trust_company_count",
+"loan_second_m12_ncycle_org_trust_company_ratio",
+"loan_second_m12_ncycle_repayAmt_mean",
+"loan_second_m12_ncycle_repayAmt_min",
+"loan_second_m12_ncycle_repayedAmount_max",
+"loan_second_m12_ncycle_repayedAmount_mean",
+"loan_second_m12_ncycle_repayedAmount_range",
+"loan_second_m12_ncycle_RepayedAmount_ratio_max",
+"loan_second_m12_ncycle_RepayedAmount_ratio_range",
+"loan_second_m12_ncycle_repayedAmount_sum",
+"loan_second_m12_ncycle_repayMons_range",
+"loan_second_m12_ncycle_rf_other_count",
+"loan_second_m12_ncycle_startDate_to_report_sum",
+"loan_second_m12_ncycleR_balance_range",
+"loan_second_m12_ncycleR_byDate_to_report_mean",
+"loan_second_m12_ncycleR_month60_State_countUnknow_mean",
+"loan_second_m12_ncycleR_month60_State_countUnknowr_mean",
+"loan_second_m12_ncycleR_repayTerm_ratio_range",
+"loan_second_m12_now_balance_ratio_mean",
+"loan_second_m12_now_bt_other_person_ratio",
+"loan_second_m12_now_bt_person_business_ratio",
+"loan_second_m12_now_businessType_giniimpurity",
+"loan_second_m12_now_byDate_to_report_mean",
+"loan_second_m12_now_byDate_to_report_sum",
+"loan_second_m12_now_gf_combine_warranty_count",
+"loan_second_m12_now_gf_crdit_ratio",
+"loan_second_m12_now_gf_other_ratio",
+"loan_second_m12_now_leftRepayTerms_range",
+"loan_second_m12_now_loanAmount_range",
+"loan_second_m12_now_month60_Amount_num_mean_max",
+"loan_second_m12_now_month60_Amount_num_mean_sum",
+"loan_second_m12_now_month60_State_count1r_sum",
+"loan_second_m12_now_month60_State_countN_max",
+"loan_second_m12_now_month60_State_countN_mean",
+"loan_second_m12_now_month60_State_countN_range",
+"loan_second_m12_now_month60_State_countNr_sum",
+"loan_second_m12_now_month60_State_countNullr_mean",
+"loan_second_m12_now_month60_State_countUnknowr_mean",
+"loan_second_m12_now_month60_State_num_size_mean",
+"loan_second_m12_now_month60_to_report_min_sum",
+"loan_second_m12_now_org_consumer_finance_ratio",
+"loan_second_m12_now_repayAmt_max",
+"loan_second_m12_now_repayAmt_mean",
+"loan_second_m12_now_repayAmt_min",
+"loan_second_m12_now_repayedAmount_mean",
+"loan_second_m12_now_repayedAmount_range",
+"loan_second_m12_now_RepayedAmount_ratio_max",
+"loan_second_m12_now_RepayedAmount_ratio_range",
+"loan_second_m12_now_repayMons_range",
+"loan_second_m12_now_repayMons_ratio_mean",
+"loan_second_m12_now_repayMons_ratio_range",
+"loan_second_m12_now_repayTerm_ratio_mean",
+"loan_second_m12_now_repayTerm_ratio_min",
+"loan_second_m12_now_rf_other_count",
+"loan_second_m12_now_rf_other_ratio",
+"loan_second_m12_now_startDate_to_report_mean",
+"loan_second_m12_nowR_balance_ratio_range",
+"loan_second_m12_nowR_businessType_giniimpurity",
+"loan_second_m12_nowR_byDate_to_report_sum",
+"loan_second_m12_nowR_gf_crdit_count",
+"loan_second_m12_nowR_gf_crdit_ratio",
+"loan_second_m12_nowR_loanAmount_min",
+"loan_second_m12_nowR_month60_State_countN_sum",
+"loan_second_m12_nowR_month60_State_countNr_mean",
+"loan_second_m12_nowR_month60_State_countNull_mean",
+"loan_second_m12_nowR_month60_State_countNullr_mean",
+"loan_second_m12_nowR_month60_State_countNullr_sum",
+"loan_second_m12_nowR_month60_State_countUnknow_mean",
+"loan_second_m12_nowR_month60_State_countUnknowr_mean",
+"loan_second_m12_nowR_month60_State_num_size_range",
+"loan_second_m12_nowR_month60_State_num_size_sum",
+"loan_second_m12_nowR_month60_to_report_mean_range",
+"loan_second_m12_nowR_org_commercial_bank_ratio",
+"loan_second_m12_nowR_org_consumer_finance_count",
+"loan_second_m12_nowR_org_consumer_finance_ratio",
+"loan_second_m12_nowR_org_micro_loan_ratio",
+"loan_second_m12_nowR_org_trust_company_ratio",
+"loan_second_m12_nowR_repayAmt_max",
+"loan_second_m12_nowR_repayAmt_mean",
+"loan_second_m12_nowR_repayedAmount_mean",
+"loan_second_m12_nowR_repayMons_ratio_max",
+"loan_second_m12_nowR_repayMons_ratio_mean",
+"loan_second_m12_nowR_repayMons_ratio_min",
+"loan_second_m12_nowR_repayMons_ratio_range",
+"loan_second_m12_nowR_repayTerms_sum",
+"loan_second_m12_nowR_rf_once_ratio",
+"loan_second_m12_nowR_rf_other_count",
+"loan_second_m12_org_micro_loan_ratio",
+"loan_second_m12_org_trust_company_count",
+"loan_second_m12_org_trust_company_ratio",
+"loan_second_m12_planRepayAmount_mean",
+"loan_second_m12_repayAmt_max",
+"loan_second_m12_repayAmt_mean",
+"loan_second_m12_RepayedAmount_ratio_max",
+"loan_second_m12_repayMons_range",
+"loan_second_m12_repayMons_ratio_sum",
+"loan_second_m12_repayTerm_ratio_range",
+"loan_second_m12_repayTerms_mean",
+"loan_second_m12_rf_irregular_ratio",
+"loan_second_m12_rf_month_ratio",
+"loan_second_m12_rf_other_ratio",
+"loan_second_m24_balance_min",
+"loan_second_m24_bt_other_loan_count",
+"loan_second_m24_businessType_giniimpurity",
+"loan_second_m24_byDate_to_report_max",
+"loan_second_m24_gf_combine_nowarranty_ratio",
+"loan_second_m24_hdue1_month60_State_num_mean_min",
+"loan_second_m24_hdue1R_loanGrantOrg_nunique",
+"loan_second_m24_hdue1R_month60_State_countNullr_sum",
+"loan_second_m24_hdue1R_month60_State_num_size_sum",
+"loan_second_m24_leftRepayTerms_max",
+"loan_second_m24_month60_Amount_num_mean_sum",
+"loan_second_m24_month60_State_count2r_mean",
+"loan_second_m24_month60_State_countCr_max",
+"loan_second_m24_month60_State_countNull_max",
+"loan_second_m24_month60_State_countNull_mean",
+"loan_second_m24_month60_State_countNull_sum",
+"loan_second_m24_month60_State_countNullr_mean",
+"loan_second_m24_month60_State_countNullr_range",
+"loan_second_m24_month60_State_num_mean_mean",
+"loan_second_m24_month60_to_report_max_max",
+"loan_second_m24_month60_to_report_max_mean",
+"loan_second_m24_month60_to_report_max_sum",
+"loan_second_m24_month60_to_report_min_max",
+"loan_second_m24_ncycle_balance_mean",
+"loan_second_m24_ncycle_balance_ratio_max",
+"loan_second_m24_ncycle_balance_ratio_min",
+"loan_second_m24_ncycle_bt_other_person_ratio",
+"loan_second_m24_ncycle_businessType_giniimpurity",
+"loan_second_m24_ncycle_byDate_to_report_range",
+"loan_second_m24_ncycle_classify5_num_min",
+"loan_second_m24_ncycle_gf_crdit_ratio",
+"loan_second_m24_ncycle_guaranteeForm_giniimpurity",
+"loan_second_m24_ncycle_is_now_range",
+"loan_second_m24_ncycle_leftRepayTerms_max",
+"loan_second_m24_ncycle_loanAmount_min",
+"loan_second_m24_ncycle_loanAmount_range",
+"loan_second_m24_ncycle_loanGrantOrg_giniimpurity",
+"loan_second_m24_ncycle_loanGrantOrg_nunique",
+"loan_second_m24_ncycle_logo_max",
+"loan_second_m24_ncycle_logo_mean",
+"loan_second_m24_ncycle_month60_Amount_num_mean_sum",
+"loan_second_m24_ncycle_month60_State_countC_sum",
+"loan_second_m24_ncycle_month60_State_countCr_max",
+"loan_second_m24_ncycle_month60_State_countCr_sum",
+"loan_second_m24_ncycle_month60_State_countNr_mean",
+"loan_second_m24_ncycle_month60_State_countNr_sum",
+"loan_second_m24_ncycle_month60_State_countNull_mean",
+"loan_second_m24_ncycle_month60_State_num_mean_max",
+"loan_second_m24_ncycle_month60_State_num_size_mean",
+"loan_second_m24_ncycle_month60_State_num_size_min",
+"loan_second_m24_ncycle_month60_State_num_size_range",
+"loan_second_m24_ncycle_month60_to_report_max_max",
+"loan_second_m24_ncycle_month60_to_report_max_mean",
+"loan_second_m24_ncycle_month60_to_report_mean_max",
+"loan_second_m24_ncycle_month60_to_report_mean_mean",
+"loan_second_m24_ncycle_month60_to_report_mean_sum",
+"loan_second_m24_ncycle_month60_to_report_min_max",
+"loan_second_m24_ncycle_org_consumer_finance_count",
+"loan_second_m24_ncycle_org_consumer_finance_ratio",
+"loan_second_m24_ncycle_org_other_ratio",
+"loan_second_m24_ncycle_org_trust_company_count",
+"loan_second_m24_ncycle_org_trust_company_ratio",
+"loan_second_m24_ncycle_planRepayAmount_mean",
+"loan_second_m24_ncycle_repayAmt_max",
+"loan_second_m24_ncycle_repayAmt_mean",
+"loan_second_m24_ncycle_repayAmt_range",
+"loan_second_m24_ncycle_RepayedAmount_ratio_mean",
+"loan_second_m24_ncycle_repayFrequency_giniimpurity",
+"loan_second_m24_ncycle_repayMons_min",
+"loan_second_m24_ncycle_repayMons_ratio_mean",
+"loan_second_m24_ncycle_repayTerm_ratio_range",
+"loan_second_m24_ncycle_repayTerms_mean",
+"loan_second_m24_ncycle_repayTerms_range",
+"loan_second_m24_ncycle_rf_month_ratio",
+"loan_second_m24_ncycle_rf_once_count",
+"loan_second_m24_ncycle_rf_other_ratio",
+"loan_second_m24_ncycle_startDate_to_report_max",
+"loan_second_m24_ncycle_startDate_to_report_sum",
+"loan_second_m24_ncycleR_byDate_to_report_max",
+"loan_second_m24_ncycleR_month60_State_countCr_max",
+"loan_second_m24_ncycleR_month60_State_countCr_range",
+"loan_second_m24_ncycleR_month60_State_countNr_mean",
+"loan_second_m24_ncycleR_month60_State_countNr_min",
+"loan_second_m24_ncycleR_month60_State_countNr_sum",
+"loan_second_m24_ncycleR_month60_to_report_min_range",
+"loan_second_m24_ncycleR_org_trust_company_count",
+"loan_second_m24_ncycleR_repayFrequency_giniimpurity",
+"loan_second_m24_ncycleR_rf_once_ratio",
+"loan_second_m24_now_balance_max",
+"loan_second_m24_now_balance_ratio_min",
+"loan_second_m24_now_gf_other_count",
+"loan_second_m24_now_guaranteeForm_giniimpurity",
+"loan_second_m24_now_leftRepayTerms_max",
+"loan_second_m24_now_leftRepayTerms_range",
+"loan_second_m24_now_loanAmount_range",
+"loan_second_m24_now_month60_State_count2r_sum",
+"loan_second_m24_now_month60_State_countN_mean",
+"loan_second_m24_now_month60_State_countNr_mean",
+"loan_second_m24_now_month60_State_countNull_mean",
+"loan_second_m24_now_month60_State_countNullr_range",
+"loan_second_m24_now_month60_State_countUnknowr_max",
+"loan_second_m24_now_month60_State_countUnknowr_mean",
+"loan_second_m24_now_month60_to_report_max_range",
+"loan_second_m24_now_month60_to_report_mean_range",
+"loan_second_m24_now_month60_to_report_min_sum",
+"loan_second_m24_now_org_micro_loan_ratio",
+"loan_second_m24_now_org_trust_company_ratio",
+"loan_second_m24_now_planRepayAmount_min",
+"loan_second_m24_now_repayAmt_mean",
+"loan_second_m24_now_repayedAmount_mean",
+"loan_second_m24_now_repayedAmount_min",
+"loan_second_m24_now_RepayedAmount_ratio_range",
+"loan_second_m24_now_repayFrequency_giniimpurity",
+"loan_second_m24_now_repayMons_range",
+"loan_second_m24_now_repayMons_ratio_sum",
+"loan_second_m24_now_repayTerm_ratio_min",
+"loan_second_m24_now_repayTerm_ratio_range",
+"loan_second_m24_now_repayTerms_mean",
+"loan_second_m24_now_rf_other_ratio",
+"loan_second_m24_now_rt_onschedule_ratio",
+"loan_second_m24_nowR_balance_ratio_range",
+"loan_second_m24_nowR_bt_other_loan_count",
+"loan_second_m24_nowR_bt_person_business_ratio",
+"loan_second_m24_nowR_byDate_to_report_mean",
+"loan_second_m24_nowR_byDate_to_report_sum",
+"loan_second_m24_nowR_loanAmount_max",
+"loan_second_m24_nowR_loanAmount_mean",
+"loan_second_m24_nowR_loanAmount_range",
+"loan_second_m24_nowR_month60_State_countN_max",
+"loan_second_m24_nowR_month60_State_countN_mean",
+"loan_second_m24_nowR_month60_State_countN_sum",
+"loan_second_m24_nowR_month60_State_countNull_max",
+"loan_second_m24_nowR_month60_State_countNull_mean",
+"loan_second_m24_nowR_month60_State_countNullr_mean",
+"loan_second_m24_nowR_month60_to_report_max_max",
+"loan_second_m24_nowR_month60_to_report_max_sum",
+"loan_second_m24_nowR_month60_to_report_mean_max",
+"loan_second_m24_nowR_month60_to_report_mean_mean",
+"loan_second_m24_nowR_month60_to_report_mean_range",
+"loan_second_m24_nowR_month60_to_report_min_max",
+"loan_second_m24_nowR_month60_to_report_min_mean",
+"loan_second_m24_nowR_org_commercial_bank_ratio",
+"loan_second_m24_nowR_org_consumer_finance_count",
+"loan_second_m24_nowR_org_consumer_finance_ratio",
+"loan_second_m24_nowR_repayFrequency_giniimpurity",
+"loan_second_m24_nowR_repayMons_max",
+"loan_second_m24_nowR_repayMons_ratio_mean",
+"loan_second_m24_nowR_repayMons_ratio_sum",
+"loan_second_m24_nowR_repayTerms_min",
+"loan_second_m24_nowR_repayTerms_range",
+"loan_second_m24_nowR_repayTerms_sum",
+"loan_second_m24_nowR_rf_month_ratio",
+"loan_second_m24_nowR_rf_once_count",
+"loan_second_m24_nowR_rf_once_ratio",
+"loan_second_m24_nowR_rf_other_ratio",
+"loan_second_m24_nowR_startDate_to_report_max",
+"loan_second_m24_org_consumer_finance_count",
+"loan_second_m24_org_other_count",
+"loan_second_m24_org_other_ratio",
+"loan_second_m24_org_trust_company_count",
+"loan_second_m24_org_trust_company_ratio",
+"loan_second_m24_repayAmt_max",
+"loan_second_m24_repayAmt_range",
+"loan_second_m24_RepayedAmount_ratio_range",
+"loan_second_m24_RepayedAmount_ratio_sum",
+"loan_second_m24_repayMons_ratio_sum",
+"loan_second_m24_repayTerm_ratio_range",
+"loan_second_m24_repayTerms_min",
+"loan_second_m24_rf_once_count",
+"loan_second_m24_rf_once_ratio",
+"loan_second_m24_rf_other_count",
+"loan_second_m24_rf_other_ratio",
+"loan_second_m24_vouch_balance_max",
+"loan_second_m24_vouch_loanAmount_max",
+"loan_second_m24_vouch_loanAmount_sum",
+"loan_second_m24_vouch_month60_State_countCr_max",
+"loan_second_m24_vouch_month60_State_countN_max",
+"loan_second_m24_vouch_month60_State_countNr_max",
+"loan_second_m24_vouch_month60_State_countNr_mean",
+"loan_second_m24_vouch_month60_State_countNr_min",
+"loan_second_m24_vouch_repayMons_mean",
+"loan_second_m24_vouch_repayMons_ratio_sum",
+"loan_second_m24_vouch_repayTerms_mean",
+"loan_second_m24_vouchR_bt_other_person_count",
+"loan_second_m24_vouchR_bt_other_person_ratio",
+"loan_second_m24_vouchR_byDate_to_report_mean",
+"loan_second_m24_vouchR_leftRepayTerms_sum",
+"loan_second_m24_vouchR_loanAmount_max",
+"loan_second_m24_vouchR_loanAmount_sum",
+"loan_second_m24_vouchR_loanGrantOrg_nunique",
+"loan_second_m24_vouchR_month60_State_countN_sum",
+"loan_second_m24_vouchR_month60_State_countNr_max",
+"loan_second_m24_vouchR_month60_State_countNr_sum",
+"loan_second_m24_vouchR_month60_State_countNull_mean",
+"loan_second_m24_vouchR_month60_State_num_size_sum",
+"loan_second_m24_vouchR_org_micro_loan_count",
+"loan_second_m24_vouchR_repayMons_min",
+"loan_second_m24_vouchR_repayTerms_sum",
+"loan_second_m24_vouchR_startDate_to_report_max",
+"loan_second_month60_1_ratio",
+"loan_second_month60_Amount_big0_mean",
+"loan_second_month60_Amount_num_max_mean",
+"loan_second_month60_Amount_num_mean_max",
+"loan_second_month60_C_count",
+"loan_second_month60_C_ratio",
+"loan_second_month60_N_count",
+"loan_second_month60_N_ratio",
+"loan_second_month60_Null_count",
+"loan_second_month60_Null_ratio",
+"loan_second_month60_State_countCr_mean",
+"loan_second_month60_State_countN_max",
+"loan_second_month60_State_countN_mean",
+"loan_second_month60_State_countN_sum",
+"loan_second_month60_State_countNr_max",
+"loan_second_month60_State_countNr_mean",
+"loan_second_month60_State_countNr_sum",
+"loan_second_month60_State_countNull_max",
+"loan_second_month60_State_countNull_mean",
+"loan_second_month60_State_countNull_sum",
+"loan_second_month60_State_countNullr_max",
+"loan_second_month60_State_countNullr_mean",
+"loan_second_month60_State_countNullr_sum",
+"loan_second_month60_State_countUnknow_sum",
+"loan_second_month60_State_giniimpurity",
+"loan_second_month60_State_num_max_mean",
+"loan_second_month60_State_num_mean",
+"loan_second_month60_State_num_mean_max",
+"loan_second_month60_State_num_mean_mean",
+"loan_second_month60_State_num_size_max",
+"loan_second_month60_State_num_size_sum",
+"loan_second_month60_to_report_max_max",
+"loan_second_month60_to_report_max_range",
+"loan_second_month60_to_report_max_sum",
+"loan_second_month60_to_report_mean_max",
+"loan_second_month60_to_report_mean_mean",
+"loan_second_month60_to_report_mean_range",
+"loan_second_month60_to_report_mean_sum",
+"loan_second_month60_to_report_min_max",
+"loan_second_month60_to_report_min_sum",
+"loan_second_ncycle_as_settle_count",
+"loan_second_ncycle_as_settle_ratio",
+"loan_second_ncycle_balance_mean",
+"loan_second_ncycle_bt_other_loan_count",
+"loan_second_ncycle_bt_other_person_count",
+"loan_second_ncycle_businessType_giniimpurity",
+"loan_second_ncycle_byDate_to_report_mean",
+"loan_second_ncycle_byDate_to_report_sum",
+"loan_second_ncycle_c5_unknow_count",
+"loan_second_ncycle_class_ncycle_count",
+"loan_second_ncycle_due_class_mean",
+"loan_second_ncycle_gf_combine_nowarranty_count",
+"loan_second_ncycle_gf_crdit_count",
+"loan_second_ncycle_gf_crdit_ratio",
+"loan_second_ncycle_loanAmount_min",
+"loan_second_ncycle_loanAmount_range",
+"loan_second_ncycle_loanGrantOrg_giniimpurity",
+"loan_second_ncycle_loanGrantOrg_nunique",
+"loan_second_ncycle_month60_State_countC_sum",
+"loan_second_ncycle_month60_State_countCr_mean",
+"loan_second_ncycle_month60_State_countCr_sum",
+"loan_second_ncycle_month60_State_countN_max",
+"loan_second_ncycle_month60_State_countN_sum",
+"loan_second_ncycle_month60_State_countNr_max",
+"loan_second_ncycle_month60_State_countNr_sum",
+"loan_second_ncycle_month60_State_countNull_max",
+"loan_second_ncycle_month60_State_countNull_mean",
+"loan_second_ncycle_month60_State_countNull_sum",
+"loan_second_ncycle_month60_State_countNullr_max",
+"loan_second_ncycle_month60_State_countNullr_sum",
+"loan_second_ncycle_month60_State_countUnknow_max",
+"loan_second_ncycle_month60_State_countUnknow_mean",
+"loan_second_ncycle_month60_State_countUnknow_range",
+"loan_second_ncycle_month60_State_countUnknow_sum",
+"loan_second_ncycle_month60_State_countUnknowr_max",
+"loan_second_ncycle_month60_State_num_mean_max",
+"loan_second_ncycle_month60_State_num_mean_mean",
+"loan_second_ncycle_month60_State_num_size_max",
+"loan_second_ncycle_month60_State_num_size_min",
+"loan_second_ncycle_month60_State_num_size_range",
+"loan_second_ncycle_month60_State_num_size_sum",
+"loan_second_ncycle_month60_to_report_max_mean",
+"loan_second_ncycle_month60_to_report_max_sum",
+"loan_second_ncycle_month60_to_report_mean_max",
+"loan_second_ncycle_month60_to_report_mean_sum",
+"loan_second_ncycle_month60_to_report_min_range",
+"loan_second_ncycle_month60_to_report_min_sum",
+"loan_second_ncycle_org_commercial_bank_count",
+"loan_second_ncycle_org_commercial_bank_ratio",
+"loan_second_ncycle_org_consumer_finance_count",
+"loan_second_ncycle_org_giniimpurity",
+"loan_second_ncycle_org_trust_company_ratio",
+"loan_second_ncycle_repayAmt_max",
+"loan_second_ncycle_repayAmt_range",
+"loan_second_ncycle_repayedAmount_range",
+"loan_second_ncycle_RepayedAmount_ratio_sum",
+"loan_second_ncycle_repayFrequency_giniimpurity",
+"loan_second_ncycle_repayMons_ratio_max",
+"loan_second_ncycle_repayMons_ratio_mean",
+"loan_second_ncycle_repayMons_ratio_sum",
+"loan_second_ncycle_repayMons_sum",
+"loan_second_ncycle_repayTerms_min",
+"loan_second_ncycle_rf_month_count",
+"loan_second_ncycle_rf_once_count",
+"loan_second_ncycle_rf_once_ratio",
+"loan_second_ncycle_rf_other_ratio",
+"loan_second_ncycle_rt_unknow_count",
+"loan_second_ncycle_startDate_to_report_sum",
+"loan_second_ncycleR_month60_State_countNr_mean",
+"loan_second_ncycleR_month60_State_countNull_sum",
+"loan_second_ncycleR_month60_State_countNullr_mean",
+"loan_second_ncycleR_month60_to_report_max_min",
+"loan_second_ncycleR_month60_to_report_max_sum",
+"loan_second_ncycleR_org_giniimpurity",
+"loan_second_ncycleR_repayMons_ratio_mean",
+"loan_second_ncycleR_repayTerms_mean",
+"loan_second_now_bt_other_person_ratio",
+"loan_second_now_byDate_to_report_mean",
+"loan_second_now_gf_other_count",
+"loan_second_now_gf_other_ratio",
+"loan_second_now_month60_State_count2r_mean",
+"loan_second_now_month60_to_report_min_mean",
+"loan_second_now_org_commercial_bank_ratio",
+"loan_second_now_planRepayAmount_mean",
+"loan_second_now_repayMons_range",
+"loan_second_now_rf_other_count",
+"loan_second_nowR_bt_other_loan_count",
+"loan_second_nowR_bt_other_person_ratio",
+"loan_second_nowR_bt_person_business_ratio",
+"loan_second_nowR_byDate_to_report_max",
+"loan_second_nowR_byDate_to_report_mean",
+"loan_second_nowR_c5_normal_ratio",
+"loan_second_nowR_gf_crdit_count",
+"loan_second_nowR_gf_other_count",
+"loan_second_nowR_gf_other_ratio",
+"loan_second_nowR_guaranteeForm_giniimpurity",
+"loan_second_nowR_loanAmount_mean",
+"loan_second_nowR_loanAmount_range",
+"loan_second_nowR_month60_State_countN_max",
+"loan_second_nowR_month60_State_countN_mean",
+"loan_second_nowR_month60_State_countN_range",
+"loan_second_nowR_month60_State_countNr_mean",
+"loan_second_nowR_month60_State_countNull_max",
+"loan_second_nowR_month60_State_countNull_mean",
+"loan_second_nowR_month60_State_countNull_range",
+"loan_second_nowR_month60_State_countNullr_mean",
+"loan_second_nowR_month60_State_countNullr_sum",
+"loan_second_nowR_month60_State_countUnknow_sum",
+"loan_second_nowR_month60_State_countUnknowr_sum",
+"loan_second_nowR_month60_to_report_min_max",
+"loan_second_nowR_org_commercial_bank_count",
+"loan_second_nowR_org_consumer_finance_count",
+"loan_second_nowR_org_consumer_finance_ratio",
+"loan_second_nowR_org_trust_company_count",
+"loan_second_nowR_planRepayAmount_mean",
+"loan_second_nowR_planRepayAmount_range",
+"loan_second_nowR_repayAmt_mean",
+"loan_second_nowR_repayedAmount_mean",
+"loan_second_nowR_repayFrequency_giniimpurity",
+"loan_second_nowR_repayMons_max",
+"loan_second_nowR_repayMons_range",
+"loan_second_nowR_repayMons_ratio_max",
+"loan_second_nowR_repayMons_ratio_mean",
+"loan_second_nowR_repayMons_ratio_range",
+"loan_second_nowR_repayTerms_mean",
+"loan_second_nowR_repayTerms_sum",
+"loan_second_nowR_rf_irregular_ratio",
+"loan_second_nowR_rf_month_ratio",
+"loan_second_nowR_rf_once_count",
+"loan_second_nowR_rf_once_ratio",
+"loan_second_nowR_rf_other_count",
+"loan_second_nowR_rf_other_ratio",
+"loan_second_nowR_startDate_to_report_mean",
+"loan_second_nowR_startDate_to_report_range",
+"loan_second_org_commercial_bank_count",
+"loan_second_org_commercial_bank_ratio",
+"loan_second_org_consumer_finance_count",
+"loan_second_org_consumer_finance_ratio",
+"loan_second_org_micro_loan_count",
+"loan_second_org_micro_loan_ratio",
+"loan_second_org_trust_company_count",
+"loan_second_planRepayAmount_mean",
+"loan_second_planRepayAmount_sum",
+"loan_second_repayAmt_max",
+"loan_second_repayAmt_min",
+"loan_second_repayedAmount_mean",
+"loan_second_RepayedAmount_ratio_mean",
+"loan_second_repayMons_mean",
+"loan_second_repayMons_ratio_mean",
+"loan_second_repayMons_ratio_sum",
+"loan_second_repayTerm_ratio_range",
+"loan_second_repayTerms_max",
+"loan_second_rf_once_count",
+"loan_second_rf_once_ratio",
+"loan_second_rt_unknow_count",
+"loan_second_startDate_to_report_mean",
+"loan_second_startDate_to_report_range",
+"loan_second_startDate_to_report_sum",
+"loan_second_vouch_loanAmount_mean",
+"loan_second_vouch_loanAmount_min",
+"loan_second_vouch_month60_State_countCr_sum",
+"loan_second_vouch_month60_State_countNr_mean",
+"loan_second_vouch_month60_State_countNr_min",
+"loan_second_vouch_month60_to_report_max_sum",
+"loan_second_vouchR_balance_ratio_mean",
+"loan_second_vouchR_class_ncycle_count",
+"loan_second_vouchR_classify5_num_sum",
+"loan_second_vouchR_loanGrantOrg_nunique",
+"loan_second_vouchR_month60_State_countN_sum",
+"loan_second_vouchR_month60_State_countNull_sum",
+"loan_second_vouchR_month60_State_num_size_sum",
+"loan_second_vouchR_month60_to_report_max_sum",
+"loan_second_vouchR_repayAmt_min",
+"loan_second_vouchR_repayMons_ratio_mean",
+"loan_second_vouchR_repayMons_sum",
+"loan_second_vouchR_repayTerms_sum",
+"loan_second_vouchR_rf_month_count",
+"loan_second_vouchR_rf_month_ratio",
+"loan_special_settlement_count",
+"LoanCount_count",
+"m01_query_detail_loan_financing_guarantee_count",
+"m03_query_detail_card_approval_ratio",
+"m03_query_detail_date_to_report_mean",
+"m03_query_detail_guarantee_ratio",
+"m03_query_detail_loan_commercial_bank_count",
+"m03_query_detail_loan_commercial_bank_ratio",
+"m03_query_detail_loan_consumer_finance_ratio",
+"m03_query_detail_loan_date_to_report_mean",
+"m06_query_detail_card_approval_count",
+"m06_query_detail_card_approval_ratio",
+"m06_query_detail_card_cnt",
+"m06_query_detail_card_date_to_report_mean",
+"m06_query_detail_date_to_report_mean",
+"m06_query_detail_loan_commercial_bank_count",
+"m06_query_detail_loan_commercial_bank_ratio",
+"m06_query_detail_loan_date_to_report_max",
+"m06_query_detail_loan_date_to_report_mean",
+"m06_query_detail_loan_financing_guarantee_ratio",
+"m06_query_detail_reason_giniimpurity",
+"m12_loan_special_settlement_amt",
+"m12_loan_special_settlement_ratio",
+"m12_query_detail_card_approval_ratio",
+"m12_query_detail_card_date_to_report_mean",
+"m12_query_detail_cnt",
+"m12_query_detail_date_to_report_mean",
+"m12_query_detail_funding_approval_ratio",
+"m12_query_detail_funding_date_to_report_mean",
+"m12_query_detail_guarantee_date_to_report_max",
+"m12_query_detail_guarantee_ratio",
+"m12_query_detail_loan_cnt",
+"m12_query_detail_loan_consumer_finance_ratio",
+"m12_query_detail_loan_date_to_report_mean",
+"m12_query_detail_loan_financing_guarantee_ratio",
+"m12_query_detail_loan_mon_report_06_count",
+"m12_query_detail_loan_mon_report_06_ratio",
+"m12_query_detail_loan_queryDate_to_report_06_ratio",
+"m12_query_detail_loan_small_loan_count",
+"m12_query_detail_mon_report_12_count",
+"m12_query_detail_mon_report_12_ratio",
+"m12_query_detail_mon_report_giniimpurity",
+"m12_query_detail_reason_giniimpurity",
+"m12_query_detail_small_loan_count",
+"m120_loan_special_other_ratio",
+"m18_loan_special_guarantor_amt",
+"m18_loan_special_guarantor_count",
+"m18_loan_special_other_amt",
+"m18_loan_special_prepayment_ratio",
+"m18_loan_special_settlement_amt",
+"m18_loan_special_settlement_ratio",
+"m180_loan_special_settlement_amt",
+"m24_loan_special_guarantor_amt",
+"m24_loan_special_prepayment_ratio",
+"m24_loan_special_roll_count",
+"m24_loan_special_settlement_amt",
+"m24_loan_special_settlement_count",
+"m24_loan_special_settlement_ratio",
+"m24_query_detail_card_mon_report_06_count",
+"m24_query_detail_card_mon_report_06_ratio",
+"m24_query_detail_card_queryDate_to_report_06_ratio",
+"m24_query_detail_cnt",
+"m24_query_detail_commercial_bank_count",
+"m24_query_detail_commercial_bank_ratio",
+"m24_query_detail_date_to_report_mean",
+"m24_query_detail_funding_approval_ratio",
+"m24_query_detail_guarantee_cnt",
+"m24_query_detail_lease_finance_ratio",
+"m24_query_detail_loan_approval_count",
+"m24_query_detail_loan_consumer_finance_ratio",
+"m24_query_detail_loan_date_to_report_max",
+"m24_query_detail_loan_date_to_report_mean",
+"m24_query_detail_loan_financing_guarantee_ratio",
+"m24_query_detail_loan_mon_report_06_ratio",
+"m24_query_detail_loan_mon_report_12_count",
+"m24_query_detail_loan_mon_report_12_ratio",
+"m24_query_detail_loan_mon_report_18_count",
+"m24_query_detail_loan_mon_report_24_count",
+"m24_query_detail_loan_mon_report_24_ratio",
+"m24_query_detail_loan_mon_report_giniimpurity",
+"m24_query_detail_loan_queryDate_to_report_06_ratio",
+"m24_query_detail_loan_queryDate_to_report_12_ratio",
+"m24_query_detail_loan_trust_company_count",
+"m24_query_detail_loan_trust_company_ratio",
+"m24_query_detail_mon_report_12_ratio",
+"m24_query_detail_mon_report_24_ratio",
+"m24_query_detail_mon_report_giniimpurity",
+"m24_query_detail_queryDate_to_report_06_ratio",
+"m24_query_detail_small_loan_count",
+"m24_query_detail_small_loan_ratio",
+"m240_loan_special_other_ratio",
+"m3_loan_special_other_amt",
+"m3_loan_special_settlement_amt",
+"m30_loan_special_prepayment_ratio",
+"m30_loan_special_settlement_count",
+"m300_loan_special_other_ratio",
+"m36_loan_special_settlement_count",
+"m36_query_detail_card_approval_ratio",
+"m36_query_detail_card_mon_report_06_count",
+"m36_query_detail_card_mon_report_06_ratio",
+"m36_query_detail_commercial_bank_count",
+"m36_query_detail_financing_guarantee_ratio",
+"m36_query_detail_loan_approval_count",
+"m36_query_detail_loan_date_to_report_max",
+"m36_query_detail_loan_date_to_report_mean",
+"m36_query_detail_loan_financing_guarantee_ratio",
+"m36_query_detail_loan_mon_report_06_ratio",
+"m36_query_detail_loan_mon_report_18_count",
+"m36_query_detail_loan_mon_report_24_count",
+"m36_query_detail_loan_mon_report_24_ratio",
+"m36_query_detail_loan_mon_report_giniimpurity",
+"m36_query_detail_loan_mon_report_nunique",
+"m36_query_detail_loan_queryDate_to_report_06_ratio",
+"m36_query_detail_loan_trust_company_count",
+"m36_query_detail_loan_trust_company_ratio",
+"m36_query_detail_mon_report_06_ratio",
+"m36_query_detail_mon_report_12_count",
+"m36_query_detail_mon_report_24_count",
+"m36_query_detail_small_loan_ratio",
+"m360_loan_special_other_ratio",
+"m42_loan_special_other_ratio",
+"m42_loan_special_prepayment_amt",
+"m42_loan_special_prepayment_ratio",
+"m48_loan_special_prepayment_ratio",
+"m48_loan_special_settlement_ratio",
+"m48_query_detail_card_approval_ratio",
+"m48_query_detail_commercial_bank_count",
+"m48_query_detail_insurance_company_ratio",
+"m48_query_detail_lease_finance_ratio",
+"m48_query_detail_loan_date_to_report_max",
+"m48_query_detail_loan_date_to_report_mean",
+"m48_query_detail_loan_financing_guarantee_ratio",
+"m48_query_detail_loan_mon_report_06_ratio",
+"m48_query_detail_loan_mon_report_18_count",
+"m48_query_detail_loan_mon_report_24_count",
+"m48_query_detail_loan_mon_report_giniimpurity",
+"m48_query_detail_loan_queryDate_to_report_06_ratio",
+"m48_query_detail_loan_small_loan_count",
+"m48_query_detail_loan_trust_company_ratio",
+"m48_query_detail_mon_report_24_ratio",
+"m48_query_detail_mon_report_giniimpurity",
+"m48_query_detail_operator_giniimpurity",
+"m48_query_detail_queryDate_to_report_06_ratio",
+"m48_query_detail_queryDate_to_report_12_ratio",
+"m48_query_detail_reason_giniimpurity",
+"m48_query_detail_trust_company_ratio",
+"m54_loan_special_other_ratio",
+"m54_loan_special_prepayment_amt",
+"m54_loan_special_prepayment_ratio",
+"m54_loan_special_settlement_ratio",
+"m6_loan_special_other_amt",
+"m60_query_detail_card_mon_report_06_count",
+"m60_query_detail_card_mon_report_06_ratio",
+"m60_query_detail_card_queryDate_to_report_06_ratio",
+"m60_query_detail_commercial_bank_ratio",
+"m60_query_detail_date_to_report_mean",
+"m60_query_detail_guarantee_ratio",
+"m60_query_detail_loan_cnt",
+"m60_query_detail_loan_consumer_finance_ratio",
+"m60_query_detail_loan_date_to_report_max",
+"m60_query_detail_loan_date_to_report_mean",
+"m60_query_detail_loan_financing_guarantee_ratio",
+"m60_query_detail_loan_mon_report_06_ratio",
+"m60_query_detail_loan_mon_report_12_ratio",
+"m60_query_detail_loan_mon_report_18_count",
+"m60_query_detail_loan_mon_report_24_count",
+"m60_query_detail_loan_mon_report_24_ratio",
+"m60_query_detail_loan_mon_report_giniimpurity",
+"m60_query_detail_loan_queryDate_to_report_06_ratio",
+"m60_query_detail_loan_queryDate_to_report_12_ratio",
+"m60_query_detail_loan_small_loan_count",
+"m60_query_detail_mon_report_06_ratio",
+"m60_query_detail_mon_report_giniimpurity",
+"m60_query_detail_queryDate_to_report_12_ratio",
+"nloc_6mpay_amt",
+"other_fstmth",
+"otherFirstMonth",
+"otherLoanCount",
+"otherLoanCount_vs_TotalCount",
+"query_12m_lnsum",
+"query_24m_reasonsum",
+"query_detail_card_queryDate_to_report_01_ratio",
+"query_detail_card_queryDate_to_report_03_ratio",
+"query_detail_date_to_report_mean",
+"query_detail_financing_guarantee_count",
+"query_detail_lease_finance_ratio",
+"query_detail_loan_approval_count",
+"query_detail_loan_date_to_report_max",
+"query_detail_loan_date_to_report_mean",
+"query_detail_loan_financing_guarantee_ratio",
+"query_detail_loan_mon_report_06_ratio",
+"query_detail_loan_mon_report_12_ratio",
+"query_detail_loan_mon_report_18_count",
+"query_detail_loan_mon_report_18_ratio",
+"query_detail_loan_mon_report_24_count",
+"query_detail_loan_mon_report_24_ratio",
+"query_detail_loan_mon_report_giniimpurity",
+"query_detail_loan_mon_report_nunique",
+"query_detail_loan_queryDate_to_report_01_ratio",
+"query_detail_loan_queryDate_to_report_03_ratio",
+"query_detail_loan_queryDate_to_report_06_ratio",
+"query_detail_loan_queryDate_to_report_12_ratio",
+"query_detail_loan_small_loan_count",
+"query_detail_mon_report_06_ratio",
+"query_detail_mon_report_12_count",
+"query_detail_mon_report_18_count",
+"query_detail_mon_report_18_ratio",
+"query_detail_queryDate_to_report_01_ratio",
+"query_detail_queryDate_to_report_03_ratio",
+"query_detail_small_loan_count",
+"query_detail_trust_company_ratio",
+"query_summary_loanAfterQueryCount",
+"query_summary_selfQueryCount",
+"recent_loan_rating_worst",
+"recent_loan_time_till_now",
+"self_2y_qrynum",
+"consume_loan_amount_max_now",
+"consume_loan_planRepayAmount_sum_now",
+"laco06_lacn",
+"loan_card_amount_sum",
+"loan_card_gm06_planRepayAmount_max",
+"loan_card_gm06_remainingTerms_sum",
+"loan_card_gm12_RepayedAmount_mean",
+"loan_card_gm12_RepayedAmount_sum",
+"loan_card_m01_balance_sum",
+"loan_card_now_startdata_min_to_report_days",
+"loan_card_r_operation_loan_ratio",
+"loan_card_RepayedAmount_sum",
+"loan_ndue_planRepayAmount_max_24m_now",
+"loan_second_by03_ncycleR_gf_crdit_ratio",
+"loan_second_by03_now_month60_State_count1r_mean",
+"loan_second_by03_now_month60_State_countN_max",
+"loan_second_by03_now_month60_to_report_mean_sum",
+"loan_second_by03_now_org_consumer_finance_ratio",
+"loan_second_by03_nowR_loanAmount_mean",
+"loan_second_by03_org_giniimpurity",
+"loan_second_by03_repayFrequency_giniimpurity",
+"loan_second_by03_startDate_to_report_range",
+"loan_second_by06_bt_other_loan_ratio",
+"loan_second_by06_ncycle_guaranteeForm_giniimpurity",
+"loan_second_by06_ncycleR_bt_other_person_ratio",
+"loan_second_by06_ncycleR_month60_to_report_min_sum",
+"loan_second_by06_ncycleR_repayedAmount_sum",
+"loan_second_by06_now_leftRepayTerms_range",
+"loan_second_by06_now_month60_State_countNull_range",
+"loan_second_by06_nowR_repayAmt_sum",
+"loan_second_by06_RepayedAmount_ratio_mean",
+"loan_second_by12_month60_to_report_max_max",
+"loan_second_by12_ncycle_bt_other_person_count",
+"loan_second_by12_ncycle_bt_other_person_ratio",
+"loan_second_by12_ncycle_loanGrantOrg_giniimpurity",
+"loan_second_by12_ncycle_org_consumer_finance_count",
+"loan_second_by12_ncycle_repayTerm_ratio_min",
+"loan_second_by12_ncycleR_month60_to_report_mean_mean",
+"loan_second_by12_now_month60_to_report_min_mean",
+"loan_second_by12_now_repayMons_min",
+"loan_second_by12_now_repayMons_ratio_max",
+"loan_second_by12_now_rf_other_ratio",
+"loan_second_by12_nowR_balance_ratio_range",
+"loan_second_by12_nowR_class_ncycle_ratio",
+"loan_second_by12_nowR_month60_to_report_min_sum",
+"loan_second_by12_nowR_repayMons_ratio_min",
+"loan_second_by12_org_commercial_bank_count",
+"loan_second_m06_loanAmount_max",
+"loan_second_m06_month60_State_countNullr_range",
+"loan_second_m06_month60_to_report_min_sum",
+"loan_second_m06_ncycle_gf_other_count",
+"loan_second_m06_ncycle_month60_to_report_mean_mean",
+"loan_second_m06_ncycleR_balance_sum",
+"loan_second_m06_ncycleR_gf_crdit_ratio",
+"loan_second_m06_ncycleR_leftRepayTerms_mean",
+"loan_second_m06_ncycleR_org_commercial_bank_ratio",
+"loan_second_m06_now_balance_range",
+"loan_second_m06_now_byDate_to_report_mean",
+"loan_second_m06_now_month60_State_countNr_max",
+"loan_second_m06_now_month60_to_report_min_sum",
+"loan_second_m06_now_repayAmt_min",
+"loan_second_m06_now_repayMons_mean",
+"loan_second_m06_now_repayMons_ratio_sum",
+"loan_second_m06_nowR_loanAmount_range",
+"loan_second_m06_nowR_month60_to_report_min_mean",
+"loan_second_m06_org_giniimpurity",
+"loan_second_m06_RepayedAmount_ratio_mean",
+"loan_second_m12_month60_State_countNr_mean",
+"loan_second_m12_month60_to_report_min_mean",
+"loan_second_m12_ncycle_month60_State_countNullr_mean",
+"loan_second_m12_ncycle_planRepayAmount_mean",
+"loan_second_m12_ncycle_repayAmt_range",
+"loan_second_m12_ncycle_RepayedAmount_ratio_min",
+"loan_second_m12_ncycle_repayTerms_mean",
+"loan_second_m12_now_repayedAmount_min",
+"loan_second_m12_now_repayTerms_range",
+"loan_second_m12_nowR_month60_to_report_min_mean",
+"loan_second_m12_nowR_planRepayAmount_mean",
+"loan_second_m12_nowR_repayedAmount_range",
+"loan_second_m12_nowR_repayTerms_mean",
+"loan_second_m12_nowR_rf_month_ratio",
+"loan_second_m24_month60_State_countNr_max",
+"loan_second_m24_ncycle_month60_State_countCr_mean",
+"loan_second_m24_ncycle_month60_State_countNr_range",
+"loan_second_m24_ncycle_month60_State_countUnknowr_mean",
+"loan_second_m24_ncycle_org_giniimpurity",
+"loan_second_m24_ncycle_repayTerm_ratio_max",
+"loan_second_m24_ncycleR_month60_State_countNullr_mean",
+"loan_second_m24_now_loanAmount_sum",
+"loan_second_m24_nowR_bt_other_person_ratio",
+"loan_second_m24_nowR_repayAmt_mean",
+"loan_second_m24_planRepayAmount_mean",
+"loan_second_m24_RepayedAmount_ratio_mean",
+"loan_second_month60_State_count1r_mean",
+"loan_second_ncycle_month60_to_report_max_range",
+"loan_second_ncycle_org_consumer_finance_ratio",
+"loan_second_ncycle_org_micro_loan_count",
+"loan_second_ncycle_org_trust_company_count",
+"loan_second_ncycle_repayAmt_min",
+"loan_second_ncycle_RepayedAmount_ratio_range",
+"loan_second_ncycle_repayMons_ratio_min",
+"loan_second_ncycleR_balance_mean",
+"loan_second_ncycleR_gf_crdit_ratio",
+"loan_second_ncycleR_month60_to_report_min_sum",
+"loan_second_ncycleR_org_commercial_bank_ratio",
+"loan_second_now_month60_State_countNull_sum",
+"loan_second_now_month60_State_countUnknowr_mean",
+"loan_second_nowR_loanGrantOrg_giniimpurity",
+"loan_second_rf_month_ratio",
+"loan_second_rf_other_ratio",
+"m36_query_detail_mon_report_06_count",
+"m60_loan_special_other_ratio",
+"m60_query_detail_loan_mon_report_12_count",
+"m60_query_detail_reason_giniimpurity",
+"otherloan_num",
+"query_detail_loan_commercial_bank_count",
+"loan_second_by12_month60_State_num_mean_mean",
+]
+
+
+def getMonList_new(month60Desc):
+    date_list = []
+    if len(month60Desc) > 5:
+        begin_end_date = re.findall('[0-9]{4}年[0-9]{2}月', month60Desc)
+        begin_date = datetime.datetime.strptime(begin_end_date[0], '%Y年%m月')
+        end_date = datetime.datetime.strptime(begin_end_date[1], '%Y年%m月')
+        while begin_date <= end_date:
+            date_str = begin_date.strftime("%Y.%m")
+            date_list.append(date_str)
+            begin_date += relativedelta(months=1)
+
+    if len(date_list) > 0:
+        return date_list[-1]
+    else:
+        return ''
+
+
+# 人行数据处理
+def rhDataOnline(applyInfo, rhInfo, channel):
+    dict_feature = {}
+    error_rh = []
+
+    # data_info = json.loads(request_body)
+    # data_info = request_body
+    # 逐步判断每个数据集内是否都存在数据
+    pboc_info = rhInfo
+    apply_info = applyInfo
+
+    # 安徽征信
+    if (channel == 2) and (len(pboc_info['cc_rh_report_detail_loan_second']) > 0):
+        for i in pboc_info['cc_rh_report_detail_loan_second']:
+            if 'byDate' in i.keys():
+                pass
+            else:
+                i['byDate'] = getMonList_new(i['month60Desc']) if 'month60Desc' in i else np.nan
+
+    if (channel == 2) and (len(pboc_info['cc_rh_report_detail_debit_card_second']) > 0):
+        for i in pboc_info['cc_rh_report_detail_debit_card_second']:
+            if 'byDate' in i.keys():
+                pass
+            else:
+                i['byDate'] = getMonList_new(i['month60Desc']) if 'month60Desc' in i else np.nan
+
+            if 'statementDate' in i.keys():
+                pass
+            else:
+                i['statementDate'] = i['cardGrantDate'] if 'cardGrantDate' in i else np.nan
+
+
+    if len(pboc_info) > 0 and len(apply_info) > 0:
+        try:
+
+            # 人行数据返回
+            dict_out1 = pboc_features.pboc_f(pboc_info=pboc_info, apply_info=apply_info)
+
+        except Exception as e:
+            error_rh.append(str(e))
+            dict_out1 = {}
+        # print(dict_out1)
+        # 剔出正确的特征
+        for key, value in dict_out1.items():
+            if key in feature:
+                dict_feature[key] = value
+
+        customer_info = {"loanNo": apply_info["loanNo"],
+                         "businessChannel": apply_info['businessChannel'],
+                         "name": apply_info['name'],
+                         "idcardNo": apply_info['idcardNo'],
+                         "mobile": apply_info['mobile'],
+                         "loan_time": apply_info['loan_time'],
+                         "totalAmount":apply_info['totalAmount']}
+
+
+        # 对每个 特征进行辨识
+        customer_info.update(dict_feature)
+
+        rh_data = pd.DataFrame([customer_info])
+
+        # print(rh_data['self_2y_qrynum'])
+
+        rh_data = rh_data.add_prefix('rhData_')
+        rh_data = rh_data.rename(columns={"rhData_loanNo": "loanNo", "rhData_businessChannel": "businessChannel",
+                                          "rhData_name": "name", "rhData_idcardNo": "idcardNo", "rhData_mobile": "mobile"})
+
+
+    else:
+        error_rh.append("人行数据为空!")
+        return {"code":1,"data":-1,"msg":"人行数据为空!"}
+
+    # 对error_rhData数据进行增加
+    rh_data["error_rhData"] = [str(error_rh)]
+
+    # rh_data.fillna(-99, inplace=True)
+    json_records = rh_data.to_json(orient="records", force_ascii=False)
+
+    json_records = json.loads(json_records)
+    # print(json_records)
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+
+    response_data = pd.DataFrame(json_records)
+    # response = lgh_rh_20211001(response_data)
+
+    return response_data
+
+
+# 百融数据处理
+def bairongDataOnline(applyInfo, bairongInfo):
+
+    error_bairong = []
+
+
+    if len(bairongInfo) > 0:
+        bairong_respBody = bairongInfo
+        # 百融数据
+        try:
+            bairong_data = features_func.BAIRONG_APPLY_LOAN_feature_online(dict_out={}, json_dict=bairong_respBody)
+        except Exception as e:
+            error_bairong.append(str(e))
+            bairong_data = {}
+    else:
+        error_bairong.append("No bairong_respBody")
+        print('{"error":1,"data":"-1","msg":"No bairong_respBody!"}')
+        bairong_respBody = {}
+        try:
+            bairong_data = features_func.BAIRONG_APPLY_LOAN_feature_online(dict_out={}, json_dict={})
+        except Exception as e:
+            error_bairong.append(str(e))
+            bairong_data = {}
+
+
+    bairong_data = pd.DataFrame([bairong_data])
+
+    bairong_data["loanNo"] = applyInfo["loanNo"] if 'loanNo' in applyInfo.keys() else np.nan
+    bairong_data["businessChannel"] = applyInfo["businessChannel"] if 'businessChannel' in applyInfo.keys() else np.nan
+    bairong_data["name"] = applyInfo["name"] if 'name' in applyInfo.keys() else np.nan
+    bairong_data["idcardNo"] = applyInfo["idcardNo"] if 'idcardNo' in applyInfo.keys() else np.nan
+    bairong_data["mobile"] = applyInfo["mobile"] if 'mobile' in applyInfo.keys() else np.nan
+    bairong_data["loan_time"] = applyInfo["loan_time"] if 'loan_time' in applyInfo.keys() else np.nan
+    bairong_data = bairong_data.add_prefix('bairongData_')
+    bairong_data["error_bairongData"] = [str(error_bairong)]
+    # print(bairong_data)
+
+
+    # bairong_data.fillna(-99, inplace=True)
+    json_records = bairong_data.to_json(orient="records", force_ascii=False)
+
+    json_records = json.loads(json_records)
+
+    response_data = pd.DataFrame(json_records)
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+    return response_data
+
+
+# 新颜数据处理
+def xinyanDataOnline(applyInfo, xinyanInfo):
+
+    error_xinyan = []
+    apply_info = applyInfo
+    # 新颜数据
+    if len(xinyanInfo) > 0:
+
+        xinyan_respBody = xinyanInfo
+        try:
+            xinyan_data = features_func.XINYAN_RADAR_feature_func_online(dict_add={}, json_dict=xinyan_respBody, appl_time=apply_info['loan_time'])
+        except Exception as e:
+            error_xinyan.append(str(e))
+            xinyan_data = {}
+    else:
+        error_xinyan.append("No xinyan_respBody")
+
+        print('{"error":1,"data":"-1","msg":"No xinyan_respBody!"}')
+        xinyan_respBody = {}
+        try:
+            xinyan_data = features_func.XINYAN_RADAR_feature_func_online(dict_add={}, json_dict={}, appl_time=apply_info['loan_time'])
+        except Exception as e:
+            error_xinyan.append(str(e))
+            xinyan_data = {}
+
+
+
+    xinyan_data = pd.DataFrame([xinyan_data])
+
+
+    xinyan_data["loanNo"] = applyInfo["loanNo"] if 'loanNo' in applyInfo.keys() else np.nan
+    xinyan_data["businessChannel"] = applyInfo["businessChannel"] if 'businessChannel' in applyInfo.keys() else np.nan
+    xinyan_data["name"] = applyInfo["name"] if 'name' in applyInfo.keys() else np.nan
+    xinyan_data["idcardNo"] = applyInfo["idcardNo"] if 'idcardNo' in applyInfo.keys() else np.nan
+    xinyan_data["mobile"] = applyInfo["mobile"] if 'mobile' in applyInfo.keys() else np.nan
+    xinyan_data["loan_time"] = applyInfo["loan_time"] if 'loan_time' in applyInfo.keys() else np.nan
+    xinyan_data = xinyan_data.add_prefix('xinyanData_')
+    xinyan_data["error_xinyanData"] = [str(error_xinyan)]
+    # print(xinyan_data)
+
+
+    # xinyan_data.fillna(-99, inplace=True)
+    json_records = xinyan_data.to_json(orient="records", force_ascii=False)
+
+    json_records = json.loads(json_records)
+
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+    response_data = pd.DataFrame(json_records)
+    return response_data
+
+
+# 京东数据处理
+def jingdongDataOnline(applyInfo, jingdongInfo):
+
+    error_jingdong = []
+
+    if len(jingdongInfo) > 0:
+        jingdong_respBody = jingdongInfo["data"]
+        # 京东数据
+        try:
+            jingdong_data = features_func.JD_feature_func_online(dict_add={}, json_dict=jingdong_respBody)
+        except Exception as e:
+            error_jingdong.append(str(e))
+            jingdong_data = {}
+    else:
+        error_jingdong.append("No JD_CUSTOM_YHHXZB")
+        print('{"error":1,"data":"-1","msg":"No JD_CUSTOM_YHHXZB!"}')
+        jingdong_respBody = {}
+        # 京东数据
+        try:
+            jingdong_data = features_func.JD_feature_func_online(dict_add={}, json_dict={})
+        except Exception as e:
+            error_jingdong.append(str(e))
+            jingdong_data = {}
+
+    jingdong_data = pd.DataFrame([jingdong_data])
+
+    jingdong_data["loanNo"] = applyInfo["loanNo"] if 'loanNo' in applyInfo.keys() else np.nan
+    jingdong_data["businessChannel"] = applyInfo["businessChannel"] if 'businessChannel' in applyInfo.keys() else np.nan
+    jingdong_data["name"] = applyInfo["name"] if 'name' in applyInfo.keys() else np.nan
+    jingdong_data["idcardNo"] = applyInfo["idcardNo"] if 'idcardNo' in applyInfo.keys() else np.nan
+    jingdong_data["mobile"] = applyInfo["mobile"] if 'mobile' in applyInfo.keys() else np.nan
+    jingdong_data["loan_time"] = applyInfo["loan_time"] if 'loan_time' in applyInfo.keys() else np.nan
+    jingdong_data = jingdong_data.add_prefix('jingdongData_')
+    jingdong_data["error_jingdongData"] = [str(error_jingdong)]
+
+    # jingdong_data.fillna(-99, inplace=True)
+    json_records = jingdong_data.to_json(orient="records", force_ascii=False)
+
+    json_records = json.loads(json_records)
+
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+    response_data = pd.DataFrame(json_records)
+    return response_data
+
+
+# 华道数据处理
+def huadaoDataOnline(applyInfo, huadaoInfo):
+
+    error_huadao = []
+    apply_info = applyInfo
+    # 华道数据
+    if len(huadaoInfo) > 0:
+        huadao_respBody = huadaoInfo
+        try:
+
+            huadao_data = features_func.huadao_feature_func_online(dict_add={}, json_dict=huadao_respBody, appl_time=apply_info['loan_time'])
+        except Exception as e:
+            error_huadao.append(str(e))
+            huadao_data = {}
+
+    else:
+        error_huadao.append("No huadao_respBody")
+        print('{"error":1,"data":"-1","msg":"No huadao_respBody!"}')
+        huadao_respBody = {}
+        try:
+            # 华道数据
+            huadao_data = features_func.huadao_feature_func_online(dict_add={}, json_dict={}, appl_time=apply_info['loan_time'])
+        except Exception as e:
+            error_huadao.append(str(e))
+            huadao_data = {}
+
+
+
+    huadao_data = pd.DataFrame([huadao_data])
+
+
+    huadao_data["loanNo"] = applyInfo["loanNo"] if 'loanNo' in applyInfo.keys() else np.nan
+    huadao_data["businessChannel"] = applyInfo["businessChannel"] if 'businessChannel' in applyInfo.keys() else np.nan
+    huadao_data["name"] = applyInfo["name"] if 'name' in applyInfo.keys() else np.nan
+    huadao_data["idcardNo"] = applyInfo["idcardNo"] if 'idcardNo' in applyInfo.keys() else np.nan
+    huadao_data["mobile"] = applyInfo["mobile"] if 'mobile' in applyInfo.keys() else np.nan
+    huadao_data["loan_time"] = applyInfo["loan_time"] if 'loan_time' in applyInfo.keys() else np.nan
+    huadao_data = huadao_data.add_prefix('huadaoData_')
+    huadao_data["error_huadaoData"] = [str(error_huadao)]
+    # print(huadao_data)
+
+
+    # huadao_data.fillna(-99, inplace=True)
+    json_records = huadao_data.to_json(orient="records", force_ascii=False)
+
+    json_records = json.loads(json_records)
+
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+    response_data = pd.DataFrame(json_records)
+    return response_data
+
+
+# 百行数据处理
+def bhDataOnline(applyInfo, bhInfo):
+    error_baihang = []
+    if len(bhInfo) > 0:
+        try:
+            baihang_info = bhInfo
+            # 百行数据返回
+            baihang_data = bh_data.get_data_set(baihang_info=baihang_info)
+
+            # 新百行特征-1
+            dict_in, dict_out = bh_data.get_data(baihang_info=baihang_info)
+            data_new1 = newBhData(dict_in, dict_out)  # 特征加工
+            baihang_data.update(data_new1)
+            baihang_data = pd.DataFrame([baihang_data])
+        except Exception as e:
+            error_baihang.append(str(e))
+            baihang_data = pd.DataFrame()
+
+    else:
+        error_baihang.append("No baihanginfo")
+        print('{"error":1,"data":"-1","msg":"No baihanginfo!"}')
+        try:
+            baihang_info = {}
+            # 百行数据返回
+            baihang_data = bh_data.get_data_set(baihang_info=baihang_info)
+
+            # 新百行特征-1
+            dict_in, dict_out = bh_data.get_data(baihang_info=baihang_info)
+            data_new1 = newBhData(dict_in, dict_out)  # 特征加工
+            baihang_data.update(data_new1)
+            baihang_data = pd.DataFrame([baihang_data])
+        except Exception as e:
+            error_baihang.append(str(e))
+            baihang_data = pd.DataFrame()
+
+
+
+    baihang_data["loanNo"] = applyInfo["loanNo"] if 'loanNo' in applyInfo.keys() else np.nan
+    baihang_data["businessChannel"] = applyInfo["businessChannel"] if 'businessChannel' in applyInfo.keys() else np.nan
+    baihang_data["name"] = applyInfo["name"] if 'name' in applyInfo.keys() else np.nan
+    baihang_data["idcardNo"] = applyInfo["idcardNo"] if 'idcardNo' in applyInfo.keys() else np.nan
+    baihang_data["mobile"] = applyInfo["mobile"] if 'mobile' in applyInfo.keys() else np.nan
+    baihang_data["loan_time"] = applyInfo["loan_time"] if 'loan_time' in applyInfo.keys() else np.nan
+
+    baihang_data = baihang_data.add_prefix('baihangData_')
+    baihang_data['error_baihangData'] = [str(error_baihang)]
+
+
+    # baihang_data.fillna(-99, inplace=True)
+    json_records = baihang_data.to_json(orient="records", force_ascii=False)
+    json_records = json.loads(json_records)
+    # print(json_records[0])
+    # print(type(json_records))
+
+    # response_data = {"code": 0,
+    #                  "data": json_records[0],
+    #                  "msg": "Success!"}
+    response_data = pd.DataFrame(json_records)
+    return response_data
+
+
+# 百行普惠-优分黑名单-优分多头-安徽社保数据处理
+def bhph_black_duotou_shebao(bhphInfo, youfenInfo, shebaoInfo):
+    """
+
+    :param bhphInfo: 百行普惠数据
+    :param youfenInfo: 优分黑名单，优分多头
+    :param shebaoInfo: 安徽社保
+    :return:
+    """
+
+    # 字典处理黑名单数据
+    def dict_handle_black(x):
+        if x['data']['statusCode'] == "2012":
+            data = json_normalize(x['data']['result'])
+            data = data.rename(columns=lambda x: x.replace(".", "_") if type(x) is str else x)
+            return data
+        else:
+            return intal_init_black(pd.DataFrame())
+
+    # 字典处理社保数据
+    def dict_handle_shebao(x):
+        return pd.DataFrame([x['levelInfo']])
+
+    # 字典处理百行普惠数据
+    def dict_handle_bh_ph(x):
+        return pd.DataFrame([{"score": x['score']}])
+
+    # 字典处理多头数据
+    def dict_handle_duotou(x):
+        if x['data']['statusCode'] == "2012":
+            data = json_normalize(x['data']['result'])
+            data = data.rename(columns=lambda x: x.replace(".", "_") if type(x) is str else x)
+            return data
+        else:
+            return intal_init_duotou(pd.DataFrame())
+
+    if 'black' in youfenInfo.keys():
+
+        df_black = dict_handle_black(youfenInfo['black'])
+        if df_black.empty:
+            pass
+        else:
+            df_black = df_black.add_prefix('black_')
+    else:
+        df_black = intal_init_black(pd.DataFrame())
+
+    if 'risk' in youfenInfo.keys():
+        df_duotou = dict_handle_duotou(youfenInfo['risk'])
+        if df_duotou.empty:
+            pass
+        else:
+            df_duotou = df_duotou.add_prefix('duotou_')
+    else:
+        df_duotou = intal_init_duotou(pd.DataFrame())
+
+    if len(shebaoInfo) > 0:
+        df_shebao = dict_handle_shebao(shebaoInfo)
+        df_shebao = df_shebao.add_prefix('shebao_')
+    else:
+        df_shebao = intal_init_shebao(pd.DataFrame())
+
+    if len(bhphInfo) > 0:
+        df_bhph = dict_handle_bh_ph(bhphInfo)
+        df_bhph = df_bhph.add_prefix('bhph_')
+    else:
+        df_bhph = intal_init_bhph(pd.DataFrame())
+
+    data = pd.concat([df_black, df_duotou, df_shebao,df_bhph],axis=1)
+
+    # 特征工程
+    finnal_data = data.replace('', np.nan)
+    col = finnal_data.select_dtypes(include='object').columns.tolist()
+    for i in col:
+        try:
+            finnal_data[i] = finnal_data[i].astype("float64")
+        except:
+            pass
+
+    finnal_data = handle_new_third(finnal_data)
+
+
+    return finnal_data
+
+
+
+# 数据处理
+def runMain(request_body=None, channel=0):
+
+    # 取三要素
+
+    # 特征返回处理
+    if 'applyInfo' in request_body.keys():
+        applyInfo = request_body['applyInfo']
+        loanNo = request_body['applyInfo']['loanNo']
+        businessChannel = request_body['applyInfo']['businessChannel']
+        idcardNo = applyInfo['idcardNo']
+        mobile = applyInfo['mobile']
+        name = applyInfo['name']
+        data = {
+            "idcardNo": applyInfo['idcardNo'],
+            "mobile": applyInfo['mobile'],
+            "name": applyInfo['name']
+        }
+    else:
+        applyInfo = {}
+        loanNo = np.nan
+        data = {}
+        businessChannel = np.nan
+        idcardNo = np.nan
+        mobile = np.nan
+        name = np.nan
+
+
+
+    if 'rhInfo' in request_body.keys():
+        rhInfo = request_body['rhInfo']
+    else:
+        rhInfo = {}
+
+    if 'bhInfo' in request_body.keys():
+        bhInfo = request_body['bhInfo']
+    else:
+        bhInfo = {}
+
+    if 'jingdongInfo' in request_body.keys():
+        jdInfo = request_body['jingdongInfo']
+    else:
+        jdInfo = {}
+
+    if 'xinyanInfo' in request_body.keys():
+        xinyanInfo = request_body['xinyanInfo']
+    else:
+        xinyanInfo = {}
+
+    if 'bairongInfo' in request_body.keys():
+        brInfo = request_body['bairongInfo']
+    else:
+        brInfo = {}
+
+    if 'huadaoInfo' in request_body.keys():
+        huadaoInfo = request_body['huadaoInfo']
+    else:
+        huadaoInfo = {}
+
+    if 'bhphInfo' in request_body.keys():
+        bhphInfo = request_body['bhphInfo']
+    else:
+        bhphInfo = {}
+
+    if 'youfenInfo' in request_body.keys():
+        youfenInfo = request_body['youfenInfo']
+    else:
+        youfenInfo = {}
+
+    if 'shebaoInfo' in request_body.keys():
+        shebaoInfo = request_body['shebaoInfo']
+    else:
+        shebaoInfo = {}
+
+    # 加载数据object数据格式
+    col_object = load('./joblib/col_object.joblib')
+
+    # lgh_rh_20211001 人行模型处理
+    rh_feature_df = rhDataOnline(applyInfo, rhInfo, channel)
+
+    # lgh_bh_20211001 百行模型处理
+    bh_feature_df = bhDataOnline(applyInfo, bhInfo)
+
+    # lgh_br_20211001 百融模型处理
+    br_feature_df = bairongDataOnline(applyInfo, brInfo)
+
+    # lgh_jd_20211001 京东模型处理
+    jd_feature_df = jingdongDataOnline(applyInfo, jdInfo)
+
+    # lgh_hd_20211001 华道模型处理
+    hd_feature_df = huadaoDataOnline(applyInfo, huadaoInfo)
+
+    # lgh_xy_20211001 新颜模型处理
+    xinyan_feature_df = xinyanDataOnline(applyInfo, xinyanInfo)
+
+    # lgh_all_20211001 全数据模型
+    all_feature_df = pd.concat([br_feature_df, jd_feature_df, hd_feature_df, xinyan_feature_df, bh_feature_df, rh_feature_df], axis=1)
+
+    # 转数据格式
+    all_col = all_feature_df.select_dtypes(include='object').columns.tolist()
+    all_object = list(set(all_col)-set(col_object))
+    for i in all_object:
+        all_feature_df[i] = pd.to_numeric(all_feature_df[i], errors='ignore')
+
+    test1_time = time()
+
+    print("特征加工计算时间:", test1_time - begin_time)
+    try:
+        lgh_rh_20211001_score = lgh_rh_20211001(all_feature_df)
+    except Exception as e:
+        print("人行模型报错:", e)
+        lgh_rh_20211001_score = {'rh_dpd60_raw_score': -1,'pboc2_fpd20_raw_coor_score': -1}
+
+    rh_time = time()
+    print("人行模型计算时间:", rh_time - test1_time)
+
+    try:
+        lgh_br_20211001_score = lgh_br_20211001(all_feature_df)
+    except Exception as e:
+        print("百融模型报错:", e)
+        lgh_br_20211001_score = {'bairong_dpd60_raw_score': -1}
+
+    br_time = time()
+    print("百融模型计算时间:", br_time - rh_time)
+
+    try:
+        lgh_jd_20211001_score = lgh_jd_20211001(all_feature_df)
+    except Exception as e:
+        print("京东模型报错:", e)
+        lgh_jd_20211001_score = {'jingdong_fpd20_raw_block3_score': -1}
+
+    jd_time = time()
+    print("京东模型计算时间:", jd_time - br_time)
+
+    try:
+        # lgh_big_20211001 大数据模型
+        lgh_big_20211001_score = lgh_big_20211001(all_feature_df)
+    except Exception as e:
+        print("大数据模型报错:", e)
+        lgh_big_20211001_score = {'big3_dpd60_raw_block3_score': -1,
+                'big3_dpd60_raw_n3_score': -1,
+                'big3_fpd20_raw_coor_score': -1,
+                'big_fpd20_raw_coor_1_score': -1,
+                'big_fpd20_raw_score': -1}
+
+    big_time = time()
+    print("大数据模型计算时间:", big_time - jd_time)
+
+    try:
+        lgh_all_20211001_score = lgh_all_20211001(all_feature_df)
+    except Exception as e:
+        print("全数据模型报错:", e)
+        lgh_all_20211001_score = {'all3_dpd60_raw_block3_score': -1,
+                'all3_fpd20_raw_block3_score': -1,
+                'all3_fpd20_raw_coor_score': -1,
+                'all_dpd60_raw_score': -1}
+
+    all_time = time()
+    print("全数据模型计算时间:", all_time - big_time)
+
+    # yzj_all_20211001 全数据模型
+    yzj_all_20211001_score = yzj_all_20211001(all_feature_df)
+
+    yzj_time = time()
+    print("yzj模型计算时间:", yzj_time - all_time)
+
+    # cxt_all_20211001 全数据模型
+    cxt_all_20211001_score = cxt_all_20211001(all_feature_df)
+
+    cxt_time = time()
+    print("cxt模型计算时间:", cxt_time - yzj_time)
+
+    # zgl 全数据模型
+    # zgl_all_20211001_score = zgl_main(request_body)
+
+
+    # 百行普惠-优分黑名单-优分多头-安徽社保数据处理
+    new_third_data = bhph_black_duotou_shebao(bhphInfo, youfenInfo, shebaoInfo)
+    try:
+        lgh_youfen_20211001_score = lgh_youfen_20211001(new_third_data)
+    except Exception as e:
+        print("百行普惠-优分黑名单-优分多头-安徽社保数据模型报错:", e)
+        lgh_youfen_20211001_score = {'youfen_fpd20_raw_coor3_score': -1}
+
+    test2_time = time()
+    print("新三方模型计算时间:", test2_time - cxt_time)
+    print("模型计算时间:",test2_time-test1_time)
+
+
+    # final_data = pd.concat([all_feature_df, new_third_data], axis=1)
+
+    if new_third_data['black_cellphoneDimension_seriousCondition_hit'].values.tolist():
+        black_cellphoneDimension_seriousCondition_hit = new_third_data['black_cellphoneDimension_seriousCondition_hit'].values[0]
+    else:
+        black_cellphoneDimension_seriousCondition_hit = np.nan
+
+    if new_third_data['black_idcardDimension_seriousCondition_hit'].values.tolist():
+        black_idcardDimension_seriousCondition_hit = new_third_data['black_idcardDimension_seriousCondition_hit'].values[0]
+
+    else:
+        black_idcardDimension_seriousCondition_hit = np.nan
+
+    if new_third_data['bhph_score'].values.tolist():
+        bhph_score = new_third_data['bhph_score'].values[0]
+
+    else:
+        bhph_score = np.nan
+
+
+    if new_third_data['shebao_IncomeLevel'].values.tolist():
+        shebao_IncomeLevel = new_third_data['shebao_IncomeLevel'].values[0]
+
+    else:
+        shebao_IncomeLevel = np.nan
+
+    if new_third_data['shebao_StabilityLevel'].values.tolist():
+        shebao_StabilityLevel = new_third_data['shebao_StabilityLevel'].values[0]
+
+    else:
+        shebao_StabilityLevel = np.nan
+
+
+    if new_third_data['shebao_CreditLevel'].values.tolist():
+        shebao_CreditLevel = new_third_data['shebao_CreditLevel'].values[0]
+
+    else:
+        shebao_CreditLevel = np.nan
+
+
+
+    # 拼接返回
+    dict_a = {'loanNo': loanNo,
+            'businessChannel': businessChannel,
+            'name': name,
+            'idcardNo': idcardNo,
+            'mobile': mobile,
+            'black_cellphoneDimension_seriousCondition_hit': black_cellphoneDimension_seriousCondition_hit,
+            'black_idcardDimension_seriousCondition_hit': black_idcardDimension_seriousCondition_hit,
+            'bhph_score': bhph_score,
+            'shebao_IncomeLevel': shebao_IncomeLevel,
+            'shebao_StabilityLevel': shebao_StabilityLevel,
+            'shebao_CreditLevel': shebao_CreditLevel}
+
+
+    dict_a.update(lgh_rh_20211001_score)
+    dict_a.update(lgh_br_20211001_score)
+
+    dict_a.update(lgh_jd_20211001_score)
+
+    dict_a.update(lgh_youfen_20211001_score)
+    dict_a.update(lgh_big_20211001_score)
+    dict_a.update(lgh_all_20211001_score)
+    dict_a.update(yzj_all_20211001_score)
+    dict_a.update(cxt_all_20211001_score)
+    # dict_a.update(zgl_all_20211001_score)
+
+
+    return dict_a
+
+
+
+request_body = {"rhInfo":{"cc_rh_report_status":{"badCardCount":0,"badClassify5":0,"creditCardCurrentOverdue":0,"creditCardCurrentOverdueAmount":0,"id":160878,"loanCurrentOverdue":0,"loanCurrentOverdueAmount":0,"loanOverdue180Amount":0,"loanOverdue31Amount":0,"loanOverdue61Amount":0,"loanOverdue91Amount":0,"reportId":158537},"cc_rh_report_dissent_tips":{"content":"信息主体对信用报告内容提出了0笔异议且正在处理中，请浏览时注意阅读相关内容。","id":147342,"reportId":158537},"cc_rh_report_public_housefund":[{"id":45318,"payArea":"广东省深圳市","payDate":"2020.09.17","payEndDate":"2021.03","payFirstDate":"2020.09","payMonthAmount":0,"payPersonPercent":"9 %","payStatus":"封存","payWorkUnit":"石家庄魔宁网络科技有限公司深圳分公司","payWorkUnitPercent":"9 %","reportId":158537,"updateDate":"2021.06"}],"cc_rh_report_summary_recovery":[],"cc_rh_report_summary_debt_loan":{"accountCount":4,"avgRepaymentAmount":845,"balance":5277,"businessType":1,"creditTotalAmount":9775,"id":158992,"orgCount":4,"reportId":158537},"cc_rh_report_summary_overdue":{"badDebtBalance":0,"badDebtCount":0,"cardOverdueCount":0,"cardOverdueMonthMax":0,"cardOverdueMonthMaxAmount":0,"cardOverdueMonthSum":0,"compensationBalance":0,"compensationCount":0,"disposalBalance":0,"disposalCount":0,"id":158291,"loanOverdueCount":0,"loanOverdueMaxMonth":0,"loanOverdueMonthMaxAmount":0,"loanOverdueMonthSum":0,"loopLoanCount":0,"loopLoanMaxAmount":0,"loopLoanMaxMonth":0,"loopLoanTotalMonth":0,"reportId":158537,"semiCardOverdueCount":0,"semiCardOverdueMonthMax":0,"semiCardOverdueMonthMaxAmount":0,"semiCardOverdueMonthSum":0,"subAccountCount":0,"subAccountMaxAmount":0,"subAccountMaxMonth":0,"subAccountTotalMonth":0},"cc_rh_report_detail_debit_card_second":[],"cc_rh_report_customer_mobile":[{"id":251096,"mobile":"13016277626","reportId":158537,"updateDate":"2021.05.21"},{"id":251095,"mobile":"16689776475","reportId":158537,"updateDate":"2021.05.29"}],"cc_rh_report_query_detail":[{"id":6408944,"queryDate":"2021.07.28","queryOperator":"商业银行\"SR\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408946,"queryDate":"2021.07.02","queryOperator":"消费金融公司\"OW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408948,"queryDate":"2021.06.22","queryOperator":"消费金融公司\"VO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408950,"queryDate":"2021.06.21","queryOperator":"小额贷款公司\"DA\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408953,"queryDate":"2021.06.01","queryOperator":"融资租赁公司\"AV\"","queryReason":"融资审批","reportId":158537,"reportNo":""},{"id":6408955,"queryDate":"2021.05.31","queryOperator":"小额贷款公司\"SS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408957,"queryDate":"2021.05.31","queryOperator":"消费金融公司\"ZH\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408959,"queryDate":"2021.05.30","queryOperator":"商业银行\"ON\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6408961,"queryDate":"2021.05.30","queryOperator":"小额贷款公司\"CY\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408963,"queryDate":"2021.05.30","queryOperator":"消费金融公司\"JX\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408965,"queryDate":"2021.05.29","queryOperator":"消费金融公司\"SC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408967,"queryDate":"2021.05.29","queryOperator":"小额贷款公司\"AZ\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408969,"queryDate":"2021.05.27","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408971,"queryDate":"2021.05.22","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408973,"queryDate":"2021.05.21","queryOperator":"商业银行\"FB\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408975,"queryDate":"2021.05.21","queryOperator":"消费金融公司\"VW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408978,"queryDate":"2021.04.05","queryOperator":"消费金融公司\"SC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408980,"queryDate":"2021.03.27","queryOperator":"商业银行\"MG\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408982,"queryDate":"2021.03.22","queryOperator":"小额贷款公司\"DA\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408984,"queryDate":"2021.03.12","queryOperator":"商业银行\"SR\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408986,"queryDate":"2021.02.20","queryOperator":"消费金融公司\"SC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408988,"queryDate":"2021.02.15","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408990,"queryDate":"2021.02.10","queryOperator":"商业银行\"CW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408992,"queryDate":"2021.02.10","queryOperator":"消费金融公司\"RC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408994,"queryDate":"2021.02.10","queryOperator":"消费金融公司\"VQ\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408996,"queryDate":"2021.01.30","queryOperator":"商业银行\"JY\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6408998,"queryDate":"2021.01.30","queryOperator":"小额贷款公司\"CY\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409000,"queryDate":"2021.01.29","queryOperator":"商业银行\"YX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409002,"queryDate":"2021.01.29","queryOperator":"消费金融公司\"ZH\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409005,"queryDate":"2021.01.29","queryOperator":"小额贷款公司\"AZ\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409007,"queryDate":"2021.01.29","queryOperator":"小额贷款公司\"WT\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409009,"queryDate":"2021.01.29","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409011,"queryDate":"2021.01.17","queryOperator":"商业银行\"CE\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409013,"queryDate":"2021.01.15","queryOperator":"商业银行\"RS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409015,"queryDate":"2021.01.15","queryOperator":"商业银行\"TQ\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409017,"queryDate":"2021.01.04","queryOperator":"商业银行\"GJ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409019,"queryDate":"2020.12.26","queryOperator":"消费金融公司\"HI\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409021,"queryDate":"2020.12.25","queryOperator":"小额贷款公司\"AZ\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409023,"queryDate":"2020.12.25","queryOperator":"小额贷款公司\"YI\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409025,"queryDate":"2020.12.25","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409027,"queryDate":"2020.12.22","queryOperator":"小额贷款公司\"SS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409029,"queryDate":"2020.12.21","queryOperator":"商业银行\"PR\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409031,"queryDate":"2020.12.21","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409034,"queryDate":"2020.12.21","queryOperator":"消费金融公司\"SC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409036,"queryDate":"2020.12.20","queryOperator":"小额贷款公司\"VC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409038,"queryDate":"2020.12.18","queryOperator":"小额贷款公司\"DA\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409040,"queryDate":"2020.12.17","queryOperator":"商业银行\"MQ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409042,"queryDate":"2020.12.11","queryOperator":"商业银行\"SR\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409044,"queryDate":"2020.12.04","queryOperator":"商业银行\"SX\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409046,"queryDate":"2020.11.10","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409048,"queryDate":"2020.11.06","queryOperator":"商业银行\"QC\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409050,"queryDate":"2020.10.29","queryOperator":"商业银行\"FB\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409051,"queryDate":"2020.09.30","queryOperator":"消费金融公司\"GW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409052,"queryDate":"2020.09.21","queryOperator":"商业银行\"DH\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409053,"queryDate":"2020.09.20","queryOperator":"商业银行\"FB\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409054,"queryDate":"2020.08.17","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409055,"queryDate":"2020.07.14","queryOperator":"商业银行\"RS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409056,"queryDate":"2020.07.14","queryOperator":"消费金融公司\"ZH\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409057,"queryDate":"2020.07.13","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409058,"queryDate":"2020.07.13","queryOperator":"小额贷款公司\"DA\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409059,"queryDate":"2020.06.14","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409060,"queryDate":"2020.06.03","queryOperator":"外资银行\"UX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409061,"queryDate":"2020.06.03","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409062,"queryDate":"2020.05.26","queryOperator":"商业银行\"ST\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409063,"queryDate":"2020.05.26","queryOperator":"商业银行\"MQ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409064,"queryDate":"2020.05.26","queryOperator":"商业银行\"YX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409065,"queryDate":"2020.05.22","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409066,"queryDate":"2020.05.19","queryOperator":"商业银行\"MT\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409067,"queryDate":"2020.05.13","queryOperator":"商业银行\"WR\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409068,"queryDate":"2020.05.13","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409069,"queryDate":"2020.04.04","queryOperator":"商业银行\"MQ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409070,"queryDate":"2020.03.28","queryOperator":"商业银行\"DH\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409071,"queryDate":"2020.03.28","queryOperator":"商业银行\"YX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409072,"queryDate":"2020.03.23","queryOperator":"商业银行\"VU\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409073,"queryDate":"2020.03.23","queryOperator":"商业银行\"CE\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409074,"queryDate":"2020.03.18","queryOperator":"商业银行\"QC\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409075,"queryDate":"2020.03.18","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409076,"queryDate":"2020.02.21","queryOperator":"消费金融公司\"XW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409077,"queryDate":"2020.02.21","queryOperator":"消费金融公司\"GW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409078,"queryDate":"2020.02.12","queryOperator":"商业银行\"DH\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409079,"queryDate":"2020.02.12","queryOperator":"消费金融公司\"XO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409080,"queryDate":"2020.02.11","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409081,"queryDate":"2020.02.11","queryOperator":"商业银行\"YX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409082,"queryDate":"2020.02.11","queryOperator":"消费金融公司\"XW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409083,"queryDate":"2020.02.02","queryOperator":"消费金融公司\"SC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409084,"queryDate":"2020.01.31","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409085,"queryDate":"2020.01.31","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409086,"queryDate":"2020.01.06","queryOperator":"商业银行\"MQ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409087,"queryDate":"2019.12.24","queryOperator":"商业银行\"PR\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409088,"queryDate":"2019.12.24","queryOperator":"消费金融公司\"XO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409089,"queryDate":"2019.12.21","queryOperator":"消费金融公司\"OW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409090,"queryDate":"2019.12.11","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409091,"queryDate":"2019.11.29","queryOperator":"商业银行\"QC\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409092,"queryDate":"2019.11.24","queryOperator":"消费金融公司\"XO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409093,"queryDate":"2019.11.09","queryOperator":"商业银行\"YX\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409094,"queryDate":"2019.11.05","queryOperator":"消费金融公司\"GW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409095,"queryDate":"2019.11.04","queryOperator":"消费金融公司\"XW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409096,"queryDate":"2019.10.13","queryOperator":"消费金融公司\"XO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409097,"queryDate":"2019.10.13","queryOperator":"商业银行\"QC\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409098,"queryDate":"2019.09.27","queryOperator":"小额贷款公司\"GS\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409099,"queryDate":"2019.09.14","queryOperator":"商业银行\"KS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409100,"queryDate":"2019.09.12","queryOperator":"商业银行\"VU\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409101,"queryDate":"2019.09.11","queryOperator":"商业银行\"RS\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409102,"queryDate":"2019.09.07","queryOperator":"消费金融公司\"GW\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409103,"queryDate":"2019.09.07","queryOperator":"消费金融公司\"XO\"","queryReason":"贷款审批","reportId":158537,"reportNo":""},{"id":6409104,"queryDate":"2019.09.06","queryOperator":"外资银行\"EA\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409105,"queryDate":"2019.08.29","queryOperator":"商业银行\"QC\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""},{"id":6409106,"queryDate":"2019.08.21","queryOperator":"商业银行\"MQ\"","queryReason":"信用卡审批","reportId":158537,"reportNo":""}],"cc_rh_report":{"applyId":176546,"createTime":"2021-07-30 17:08:32","id":158537,"idType":"身份证","idcardNo":"430223199810267273","name":"吴凯","queryOperator":"青年优品融资租赁有限公司","queryReason":"融资审批","queryTime":"","reportNo":"2021073016024885764780","reportTime":"2021.07.30 16:02:48"},"cc_rh_report_customer_profession":[{"duty":"--","entryYear":"--","id":505648,"industry":"--","profession":"不便分类的其他从业人员","reportId":158537,"technicalLevel":"--","updateTime":"2021.05.21","workUnit":"未知","workUnitAddr":"湖南省攸县联星街道雪花社区翻身巷15号附203号","workUnitPhone":"--","workUnitType":"--"},{"duty":"--","entryYear":"--","id":505649,"industry":"租赁和商务服务业","profession":"生产、运输设备操作人员及有关人员","reportId":158537,"technicalLevel":"--","updateTime":"2021.04.05","workUnit":"海南网神网咖网络有限公司","workUnitAddr":"--","workUnitPhone":"--","workUnitType":"--"},{"duty":"--","entryYear":"--","id":505650,"industry":"信息传输、软件和信息技术服务业","profession":"办事人员和有关人员","reportId":158537,"technicalLevel":"--","updateTime":"2021.03.27","workUnit":"吴凯","workUnitAddr":"湖南省攸县联星街道雪花社区翻身巷15号附203号","workUnitPhone":"--","workUnitType":"--"}],"cc_rh_report_loan_special_detail_second":[{"id":1225776,"loanId":4105765,"reportId":158537,"specialTradeAmount":1500,"specialTradeChangeMonth":1,"specialTradeDate":"2021.04.21","specialTradeDetail":"提前还款/结清。","specialTradeType":"提前结清"},{"id":1225775,"loanId":4105763,"reportId":158537,"specialTradeAmount":2230,"specialTradeChangeMonth":0,"specialTradeDate":"2021.01.30","specialTradeDetail":"提前还款（全部），变更月数0个月","specialTradeType":"提前结清"},{"id":1225774,"loanId":4105760,"reportId":158537,"specialTradeAmount":703,"specialTradeChangeMonth":0,"specialTradeDate":"2021.01.31","specialTradeDetail":"--","specialTradeType":"提前结清"},{"id":1225773,"loanId":4105758,"reportId":158537,"specialTradeAmount":407,"specialTradeChangeMonth":0,"specialTradeDate":"2020.10.15","specialTradeDetail":"--","specialTradeType":"提前结清"}],"cc_rh_report_detail_recovery":[],"cc_rh_report_public_court":[],"cc_rh_report_customer":{"birthday":"1998.10.26","degree":"--","education":"初中及以下","email":"--","employmentStatus":"在职","homeTelNo":"","id":158537,"marry":"未婚","messageAddrLat":"26.993067","messageAddrLng":"113.342067","messageAddress":"湖南省攸县联星街道雪花社区翻身巷15号附203号","mobile":"","nationality":"中国","reportId":158537,"residenceAddress":"--","sex":"男","workTelNo":""},"cc_rh_report_detail_loan_second":[{"accountLogo":"******","accountStatus":"正常","balance":550,"businessType":"其他个人消费贷款","byDate":"截至2021年07月02日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2021.09.01","guaranteeForm":"其他","id":4105747,"leftRepayTerms":"2","loanAmount":2900,"loanGrantOrg":"商业银行\"SX\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0/0","month60Desc":"2020年12月 —2021年07月的还款记录","month60State":"*NNNNNNN","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":432,"planRepayDate":"2021.07.01","recentRepayDate":"2021.07.02","repayFrequency":"月","repayTerms":9,"repayType":"--","repayedAmount":432,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.12.04"},{"accountLogo":"******","accountStatus":"正常","balance":8,"businessType":"其他个人消费贷款","byDate":"截至2021年06月30日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2021.08.01","guaranteeForm":"其他","id":4105748,"leftRepayTerms":"2","loanAmount":78,"loanGrantOrg":"消费金融公司\"VW\"","loanType":1,"month60Amount":"0/0/0/0/0","month60Desc":"2021年02月 —2021年06月的还款记录","month60State":"*NNNN","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":57,"planRepayDate":"2021.06.30","recentRepayDate":"2021.06.30","repayFrequency":"月","repayTerms":6,"repayType":"--","repayedAmount":57,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.02.14"},{"accountLogo":"******","accountStatus":"正常","balance":2722,"businessType":"其他个人消费贷款","byDate":"截至2021年07月27日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2021.12.27","guaranteeForm":"信用/免担保","id":4105749,"leftRepayTerms":"6","loanAmount":4800,"loanGrantOrg":"商业银行\"MG\"","loanType":1,"month60Amount":"0/0/0/0/0","month60Desc":"2021年03月 —2021年07月的还款记录","month60State":"*NNNN","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":562,"planRepayDate":"2021.07.27","recentRepayDate":"2021.07.27","repayFrequency":"月","repayTerms":10,"repayType":"--","repayedAmount":562,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.03.27"},{"accountLogo":"******","accountStatus":"正常","balance":1997,"businessType":"其他个人消费贷款","byDate":"截至2021年06月30日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2022.06.21","guaranteeForm":"信用/免担保","id":4105750,"leftRepayTerms":"--","loanAmount":1997,"loanGrantOrg":"商业银行\"SR\"","loanType":1,"month60Amount":"0/0","month60Desc":"2021年05月 —2021年06月的还款记录","month60State":"**","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"2021.06.30","recentRepayDate":"2021.05.21","repayFrequency":"一次性","repayTerms":0,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.05.21"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2018年03月31日","classify5":"","closeDate":"2018.03.04","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105751,"leftRepayTerms":"","loanAmount":1500,"loanGrantOrg":"消费金融公司\"XW\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0/0/0/0/0/0","month60Desc":"2017年04月 —2018年03月的还款记录","month60State":"*NNNNNNNNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":11,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2017.04.04"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2018年12月31日","classify5":"","closeDate":"2018.12.14","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105752,"leftRepayTerms":"","loanAmount":2999,"loanGrantOrg":"消费金融公司\"XW\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0/0","month60Desc":"2018年05月 —2018年12月的还款记录","month60State":"*NNNNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":8,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2018.05.07"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2018年12月07日","classify5":"","closeDate":"2018.12.07","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105753,"leftRepayTerms":"","loanAmount":1000,"loanGrantOrg":"消费金融公司\"PB\"","loanType":1,"month60Amount":"0/0","month60Desc":"2018年11月 —2018年12月的还款记录","month60State":"*C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"一次性","repayTerms":0,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2018.11.07"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2019年07月30日","classify5":"","closeDate":"2019.07.30","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105754,"leftRepayTerms":"","loanAmount":1477,"loanGrantOrg":"消费金融公司\"GW\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0/0/0","month60Desc":"2018年11月 —2019年07月的还款记录","month60State":"****NNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":8,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2018.11.26"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2019年08月28日","classify5":"","closeDate":"2019.08.28","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105755,"leftRepayTerms":"","loanAmount":1400,"loanGrantOrg":"消费金融公司\"GW\"","loanType":1,"month60Amount":"0","month60Desc":"2019年08月 —2019年08月的还款记录","month60State":"C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":1,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2019.08.02"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2019年09月25日","classify5":"","closeDate":"2019.09.25","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105756,"leftRepayTerms":"","loanAmount":1500,"loanGrantOrg":"消费金融公司\"GW\"","loanType":1,"month60Amount":"0","month60Desc":"2019年09月 —2019年09月的还款记录","month60State":"C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":0,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2019.09.12"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2019年12月15日","classify5":"","closeDate":"2019.11.27","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105757,"leftRepayTerms":"","loanAmount":1599,"loanGrantOrg":"消费金融公司\"GW\"","loanType":1,"month60Amount":"0/0/0","month60Desc":"2019年10月 —2019年12月的还款记录","month60State":"*NC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":1,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2019.10.14"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2020年10月15日","classify5":"","closeDate":"2020.10.15","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105758,"leftRepayTerms":"","loanAmount":1319,"loanGrantOrg":"消费金融公司\"XO\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0","month60Desc":"2020年04月 —2020年10月的还款记录","month60State":"*NNNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":9,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.04.22"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他贷款","byDate":"截至2021年02月10日","classify5":"","closeDate":"2021.02.10","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"其他","id":4105759,"leftRepayTerms":"","loanAmount":5000,"loanGrantOrg":"商业银行\"FB\"","loanType":1,"month60Amount":"0/0/0/0/0/0","month60Desc":"2020年09月 —2021年02月的还款记录","month60State":"*NNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":6,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.09.20"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年01月31日","classify5":"","closeDate":"2021.01.31","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105760,"leftRepayTerms":"","loanAmount":1000,"loanGrantOrg":"消费金融公司\"XO\"","loanType":1,"month60Amount":"0/0/0/0","month60Desc":"2020年10月 —2021年01月的还款记录","month60State":"*NNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":6,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.10.29"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他贷款","byDate":"截至2021年04月22日","classify5":"","closeDate":"2021.04.22","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"其他","id":4105761,"leftRepayTerms":"","loanAmount":1665,"loanGrantOrg":"商业银行\"FB\"","loanType":1,"month60Amount":"0/0/0/0/0/0/0","month60Desc":"2020年10月 —2021年04月的还款记录","month60State":"**NNNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":6,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.10.29"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年03月28日","classify5":"","closeDate":"2021.03.28","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105762,"leftRepayTerms":"","loanAmount":1600,"loanGrantOrg":"消费金融公司\"GW\"","loanType":1,"month60Amount":"0/0/0/0/0","month60Desc":"2020年11月 —2021年03月的还款记录","month60State":"*NNNC","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":5,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.11.10"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年01月30日","classify5":"","closeDate":"2021.01.30","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105763,"leftRepayTerms":"","loanAmount":2230,"loanGrantOrg":"消费金融公司\"VP\"","loanType":1,"month60Amount":"0/0","month60Desc":"2020年12月 —2021年01月的还款记录","month60State":"*C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":2,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.12.26"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年04月30日","classify5":"","closeDate":"2021.04.19","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105764,"leftRepayTerms":"","loanAmount":1996,"loanGrantOrg":"商业银行\"SR\"","loanType":1,"month60Amount":"0/0/0/0/0","month60Desc":"2020年12月 —2021年04月的还款记录","month60State":"*N**C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"一次性","repayTerms":0,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2020.12.30"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年04月21日","classify5":"","closeDate":"2021.04.21","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"信用/免担保","id":4105765,"leftRepayTerms":"","loanAmount":1500,"loanGrantOrg":"消费金融公司\"SC\"","loanType":1,"month60Amount":"0","month60Desc":"2021年04月 —2021年04月的还款记录","month60State":"C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":1,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.04.05"},{"accountLogo":"******","accountStatus":"结清","balance":0,"businessType":"其他贷款","byDate":"截至2021年06月02日","classify5":"","closeDate":"2021.06.02","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"--","guaranteeForm":"其他","id":4105766,"leftRepayTerms":"","loanAmount":2800,"loanGrantOrg":"商业银行\"FB\"","loanType":1,"month60Amount":"0/0","month60Desc":"2021年05月 —2021年06月的还款记录","month60State":"*C","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"","recentRepayDate":"","repayFrequency":"月","repayTerms":1,"repayType":"--","repayedAmount":0,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.05.21"},{"accountLogo":"******","accountStatus":"正常","balance":38614,"businessType":"其他个人消费贷款","byDate":"截至2021年06月30日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2023.02.12","guaranteeForm":"信用/免担保","id":4105767,"leftRepayTerms":"34","loanAmount":40000,"loanGrantOrg":"消费金融公司\"XO\"","loanType":2,"month60Amount":"0/0/0","month60Desc":"2021年04月 —2021年06月的还款记录","month60State":"NNN","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":1551,"planRepayDate":"2021.06.22","recentRepayDate":"2021.06.22","repayFrequency":"月","repayTerms":0,"repayType":"不区分还款方式","repayedAmount":1551,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.04.15"},{"accountLogo":"******","accountStatus":"正常","balance":0,"businessType":"其他个人消费贷款","byDate":"截至2021年06月30日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2022.05.31","guaranteeForm":"信用/免担保","id":4105768,"leftRepayTerms":"1","loanAmount":6350,"loanGrantOrg":"消费金融公司\"VP\"","loanType":2,"month60Amount":"0/0","month60Desc":"2021年05月 —2021年06月的还款记录","month60State":"NN","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":24,"planRepayDate":"2021.06.29","recentRepayDate":"2021.06.29","repayFrequency":"月","repayTerms":0,"repayType":"不区分还款方式","repayedAmount":24,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.05.29"},{"accountLogo":"******","accountStatus":"正常","balance":3345,"businessType":"其他个人消费贷款","byDate":"截至2021年06月30日","classify5":"正常","closeDate":"","currency":"人民币元","currentOverdueAmount":0,"currentOverdueTerms":0,"dissentTagging":"","dissentTaggingDate":"","endDate":"2021.12.26","guaranteeForm":"信用/免担保","id":4105769,"leftRepayTerms":"6","loanAmount":6350,"loanGrantOrg":"消费金融公司\"VP\"","loanType":2,"month60Amount":"0","month60Desc":"2021年06月 —2021年06月的还款记录","month60State":"N","mutualFlag":"无","orgExplain":"","orgExplainDate":"","outDate":"","overdue180Amount":0,"overdue31Amount":0,"overdue61Amount":0,"overdue91Amount":0,"planRepayAmount":0,"planRepayDate":"--","recentRepayDate":"2021.06.29","repayFrequency":"月","repayTerms":0,"repayType":"不区分还款方式","repayedAmount":683,"reportId":158537,"selfDeclare":"","selfDeclareDate":"","specialTagging":"","startDate":"2021.06.01"}],"cc_rh_report_customer_home":[{"address":"湖南省攸县联星街道雪花社区翻身巷15号附203号","addressState":"--","id":625438,"phone":"16689776475","reportId":158537,"updateTime":"2021.05.29"},{"address":"广东省深圳市福田区金宇新村30号503","addressState":"其他","id":625439,"phone":"--","reportId":158537,"updateTime":"2021.04.05"},{"address":"海口市","addressState":"--","id":625440,"phone":"--","reportId":158537,"updateTime":"2020.11.10"},{"address":"海南省海口市龙华区金宇新村30号503","addressState":"其他","id":625441,"phone":"--","reportId":158537,"updateTime":"2018.11.07"},{"address":"海南海口龙华区金宇新村3号503号房","addressState":"--","id":625442,"phone":"--","reportId":158537,"updateTime":"2018.05.07"}],"cc_rh_report_summary_credit_tips":{"commercialHouseLoanCount":0,"commercialHouseLoanFirstMonth":"--","creditCardCount":0,"declareCount":0,"dissentCount":0,"firstCreditCardMonth":"--","firstLoanMonth":"","firstReadyCardMonth":"--","houseLoanCount":0,"houseLoanFirstMonth":"--","id":153706,"otherCount":0,"otherFirstMonth":"--","otherLoanCount":23,"otherLoanFirstMonth":"2017.04","readyCardCount":0,"reportId":158537},"cc_rh_report_query_summary":{"bussinessRealNameQueryCount":0,"cardQueryCount":0,"cardQueryOrgCount":0,"guaranteeQueryCount":0,"id":152729,"loanAfterQueryCount":8,"loanQueryCount":2,"loanQueryOrgCount":2,"reportId":158537,"selfQueryCount":0}},"bairongInfo":{"applyLoanStr":{"d15":{"cell":{"coon":{"allnum":"2","orgnum":"2"},"nbank":{"allnum":"2","cons_allnum":"1","cons_orgnum":"1","night_allnum":"1","night_orgnum":"1","orgnum":"2","oth_allnum":"2","oth_orgnum":"2","selfnum":"1","sloan_allnum":"1","sloan_orgnum":"1","week_allnum":"0","week_orgnum":"0"}},"id":{"caon":{"allnum":"1","orgnum":"1"},"coon":{"allnum":"2","orgnum":"2"},"nbank":{"allnum":"4","ca_allnum":"1","ca_orgnum":"1","cf_allnum":"1","cf_orgnum":"1","cons_allnum":"3","cons_orgnum":"3","night_allnum":"1","night_orgnum":"1","orgnum":"4","oth_allnum":"2","oth_orgnum":"2","selfnum":"1","sloan_allnum":"1","sloan_orgnum":"1","week_allnum":"0","week_orgnum":"0"},"pdl":{"allnum":"1","orgnum":"1"}}},"d7":{},"fst":{"cell":{"bank":{"inteday":"221"},"nbank":{"inteday":"339"}},"id":{"bank":{"inteday":"221"},"nbank":{"inteday":"353"}}},"lst":{"cell":{"bank":{"consnum":"1","csinteday":"1","inteday":"125"},"nbank":{"consnum":"1","csinteday":"1","inteday":"9"}},"id":{"bank":{"consnum":"1","csinteday":"1","inteday":"125"},"nbank":{"consnum":"1","csinteday":"1","inteday":"7"}}},"m1":{"cell":{"caon":{"allnum":"1","orgnum":"1"},"coon":{"allnum":"2","orgnum":"2"},"nbank":{"allnum":"3","cons_allnum":"1","cons_orgnum":"1","else_allnum":"1","else_orgnum":"1","night_allnum":"2","night_orgnum":"2","orgnum":"3","oth_allnum":"3","oth_orgnum":"3","selfnum":"1","sloan_allnum":"1","sloan_orgnum":"1","week_allnum":"0","week_orgnum":"0"}},"id":{"caon":{"allnum":"2","orgnum":"2"},"coon":{"allnum":"2","orgnum":"2"},"nbank":{"allnum":"6","ca_allnum":"1","ca_orgnum":"1","cf_allnum":"2","cf_orgnum":"1","cons_allnum":"4","cons_orgnum":"3","else_allnum":"1","else_orgnum":"1","night_allnum":"2","night_orgnum":"2","orgnum":"5","oth_allnum":"3","oth_orgnum":"3","selfnum":"1","sloan_allnum":"1","sloan_orgnum":"1","week_allnum":"0","week_orgnum":"0"},"pdl":{"allnum":"2","orgnum":"1"}}},"m12":{"cell":{"af":{"allnum":"1","orgnum":"1"},"avg_monnum":"7.17","bank":{"allnum":"11","avg_monnum":"2.75","max_inteday":"39","max_monnum":"7","min_inteday":"0","min_monnum":"0","night_allnum":"2","night_orgnum":"2","orgnum":"11","selfnum":"0","tot_mons":"4","tra_allnum":"9","tra_orgnum":"9","week_allnum":"4","week_orgnum":"4"},"caoff":{"allnum":"7","orgnum":"5"},"caon":{"allnum":"32","orgnum":"19"},"cooff":{"allnum":"5","orgnum":"2"},"coon":{"allnum":"7","orgnum":"6"},"max_inteday":"37","max_monnum":"19","min_inteday":"0","min_monnum":"1","nbank":{"allnum":"75","avg_monnum":"6.25","ca_allnum":"7","ca_orgnum":"3","cf_allnum":"21","cf_orgnum":"9","cons_allnum":"28","cons_orgnum":"10","else_allnum":"20","else_orgnum":"13","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"37","max_monnum":"13","mc_allnum":"2","mc_orgnum":"1","min_inteday":"0","min_monnum":"1","night_allnum":"10","night_orgnum":"10","nsloan_allnum":"10","nsloan_orgnum":"5","orgnum":"39","oth_allnum":"45","oth_orgnum":"26","selfnum":"2","sloan_allnum":"15","sloan_orgnum":"9","tot_mons":"12","week_allnum":"20","week_orgnum":"17"},"oth":{"allnum":"3","orgnum":"3"},"pdl":{"allnum":"20","orgnum":"7"},"rel":{"allnum":"13","orgnum":"9"},"tot_mons":"12"},"id":{"af":{"allnum":"1","orgnum":"1"},"avg_monnum":"8.50","bank":{"allnum":"11","avg_monnum":"2.75","max_inteday":"39","max_monnum":"7","min_inteday":"0","min_monnum":"0","night_allnum":"2","night_orgnum":"2","orgnum":"11","selfnum":"0","tot_mons":"4","tra_allnum":"9","tra_orgnum":"9","week_allnum":"4","week_orgnum":"4"},"caoff":{"allnum":"7","orgnum":"5"},"caon":{"allnum":"38","orgnum":"20"},"cooff":{"allnum":"5","orgnum":"2"},"coon":{"allnum":"8","orgnum":"7"},"max_inteday":"36","max_monnum":"22","min_inteday":"0","min_monnum":"1","nbank":{"allnum":"91","avg_monnum":"7.58","ca_allnum":"11","ca_orgnum":"4","cf_allnum":"31","cf_orgnum":"9","cons_allnum":"41","cons_orgnum":"11","else_allnum":"21","else_orgnum":"14","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"36","max_monnum":"15","mc_allnum":"2","mc_orgnum":"1","min_inteday":"0","min_monnum":"1","night_allnum":"11","night_orgnum":"11","nsloan_allnum":"10","nsloan_orgnum":"5","orgnum":"41","oth_allnum":"47","oth_orgnum":"27","selfnum":"2","sloan_allnum":"17","sloan_orgnum":"9","tot_mons":"12","week_allnum":"23","week_orgnum":"17"},"oth":{"allnum":"3","orgnum":"3"},"pdl":{"allnum":"29","orgnum":"7"},"rel":{"allnum":"13","orgnum":"9"},"tot_mons":"12"}},"m3":{"cell":{"avg_monnum":"9.67","caoff":{"allnum":"1","orgnum":"1"},"caon":{"allnum":"16","orgnum":"14"},"cooff":{"allnum":"2","orgnum":"2"},"coon":{"allnum":"4","orgnum":"3"},"max_inteday":"20","max_monnum":"13","min_inteday":"0","min_monnum":"4","nbank":{"allnum":"29","avg_monnum":"9.67","ca_allnum":"3","ca_orgnum":"2","cf_allnum":"4","cf_orgnum":"4","cons_allnum":"8","cons_orgnum":"7","else_allnum":"9","else_orgnum":"7","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"20","max_monnum":"13","mc_allnum":"1","mc_orgnum":"1","min_inteday":"0","min_monnum":"4","night_allnum":"8","night_orgnum":"8","nsloan_allnum":"3","nsloan_orgnum":"3","orgnum":"24","oth_allnum":"21","oth_orgnum":"17","selfnum":"2","sloan_allnum":"7","sloan_orgnum":"5","tot_mons":"3","week_allnum":"8","week_orgnum":"8"},"pdl":{"allnum":"3","orgnum":"2"},"rel":{"allnum":"3","orgnum":"3"},"tot_mons":"3"},"id":{"avg_monnum":"11.33","caoff":{"allnum":"1","orgnum":"1"},"caon":{"allnum":"17","orgnum":"15"},"cooff":{"allnum":"2","orgnum":"2"},"coon":{"allnum":"5","orgnum":"4"},"max_inteday":"20","max_monnum":"14","min_inteday":"0","min_monnum":"7","nbank":{"allnum":"34","avg_monnum":"11.33","ca_allnum":"4","ca_orgnum":"3","cf_allnum":"7","cf_orgnum":"5","cons_allnum":"12","cons_orgnum":"9","else_allnum":"10","else_orgnum":"8","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"20","max_monnum":"14","mc_allnum":"1","mc_orgnum":"1","min_inteday":"0","min_monnum":"7","night_allnum":"9","night_orgnum":"9","nsloan_allnum":"3","nsloan_orgnum":"3","orgnum":"27","oth_allnum":"22","oth_orgnum":"18","selfnum":"2","sloan_allnum":"7","sloan_orgnum":"5","tot_mons":"3","week_allnum":"8","week_orgnum":"8"},"pdl":{"allnum":"6","orgnum":"3"},"rel":{"allnum":"3","orgnum":"3"},"tot_mons":"3"}},"m6":{"cell":{"af":{"allnum":"1","orgnum":"1"},"avg_monnum":"7.83","bank":{"allnum":"3","avg_monnum":"1.50","max_inteday":"39","max_monnum":"2","min_inteday":"6","min_monnum":"0","night_allnum":"0","night_orgnum":"0","orgnum":"3","selfnum":"0","tot_mons":"2","tra_allnum":"3","tra_orgnum":"3","week_allnum":"1","week_orgnum":"1"},"caoff":{"allnum":"1","orgnum":"1"},"caon":{"allnum":"22","orgnum":"17"},"cooff":{"allnum":"4","orgnum":"2"},"coon":{"allnum":"6","orgnum":"5"},"max_inteday":"37","max_monnum":"15","min_inteday":"0","min_monnum":"1","nbank":{"allnum":"45","avg_monnum":"7.33","ca_allnum":"3","ca_orgnum":"2","cf_allnum":"10","cf_orgnum":"6","cons_allnum":"18","cons_orgnum":"10","else_allnum":"13","else_orgnum":"10","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"37","max_monnum":"13","mc_allnum":"1","mc_orgnum":"1","min_inteday":"0","min_monnum":"1","night_allnum":"8","night_orgnum":"8","nsloan_allnum":"4","nsloan_orgnum":"3","orgnum":"30","oth_allnum":"31","oth_orgnum":"21","selfnum":"2","sloan_allnum":"8","sloan_orgnum":"5","tot_mons":"6","week_allnum":"13","week_orgnum":"12"},"oth":{"allnum":"2","orgnum":"2"},"pdl":{"allnum":"8","orgnum":"3"},"rel":{"allnum":"5","orgnum":"4"},"tot_mons":"6"},"id":{"af":{"allnum":"1","orgnum":"1"},"avg_monnum":"8.83","bank":{"allnum":"3","avg_monnum":"1.50","max_inteday":"39","max_monnum":"2","min_inteday":"6","min_monnum":"0","night_allnum":"0","night_orgnum":"0","orgnum":"3","selfnum":"0","tot_mons":"2","tra_allnum":"3","tra_orgnum":"3","week_allnum":"1","week_orgnum":"1"},"caoff":{"allnum":"1","orgnum":"1"},"caon":{"allnum":"24","orgnum":"18"},"cooff":{"allnum":"4","orgnum":"2"},"coon":{"allnum":"7","orgnum":"6"},"max_inteday":"30","max_monnum":"14","min_inteday":"0","min_monnum":"2","nbank":{"allnum":"52","avg_monnum":"8.33","ca_allnum":"5","ca_orgnum":"3","cf_allnum":"14","cf_orgnum":"6","cons_allnum":"24","cons_orgnum":"11","else_allnum":"14","else_orgnum":"11","finlea_allnum":"2","finlea_orgnum":"2","max_inteday":"30","max_monnum":"14","mc_allnum":"1","mc_orgnum":"1","min_inteday":"0","min_monnum":"2","night_allnum":"9","night_orgnum":"9","nsloan_allnum":"4","nsloan_orgnum":"3","orgnum":"32","oth_allnum":"32","oth_orgnum":"22","selfnum":"2","sloan_allnum":"8","sloan_orgnum":"5","tot_mons":"6","week_allnum":"13","week_orgnum":"12"},"oth":{"allnum":"2","orgnum":"2"},"pdl":{"allnum":"12","orgnum":"3"},"rel":{"allnum":"5","orgnum":"4"},"tot_mons":"6"}}},"code":"00","flag":{"applyloanstr":"1"},"oldDate":true,"swift_number":"3001820_20210730183946_99943315A"},"bhInfo":{"bh_bh_report_customer_work":[{"date":"2021-02-17","id":229417,"reportId":196109,"workAddress":"广东省深圳市福田区文化创意园H馆南门2楼","workName":"石家庄魔宁网络科技有限公司深圳分公司"}],"bh_bh_report_revolving_detail_od":[],"bh_bh_report_loan_revolving_day_summary":[{"accountCount":0,"applyTenantCount":0,"creditLimitSum":0.0,"id":784433,"lendingAmount":0.0,"overdueAccountCount":0,"reportId":196109,"revolvingCompensationAmount":0.0,"revolvingCompensationCount":0,"revolvingCompensationTimes":0,"type":1},{"accountCount":0,"applyTenantCount":1,"creditLimitSum":0.0,"id":784434,"lendingAmount":0.0,"overdueAccountCount":0,"reportId":196109,"revolvingCompensationAmount":0.0,"revolvingCompensationCount":0,"revolvingCompensationTimes":0,"type":2},{"accountCount":0,"applyTenantCount":1,"creditLimitSum":0.0,"id":784435,"lendingAmount":0.0,"overdueAccountCount":0,"reportId":196109,"revolvingCompensationAmount":0.0,"revolvingCompensationCount":0,"revolvingCompensationTimes":0,"type":3},{"accountCount":0,"applyTenantCount":2,"creditLimitSum":0.0,"id":784436,"lendingAmount":0.0,"overdueAccountCount":0,"reportId":196109,"revolvingCompensationAmount":0.0,"revolvingCompensationCount":0,"revolvingCompensationTimes":0,"type":4}],"bh_bh_report":{"applyId":205233,"createTime":"2021-07-30 18:37:55","id":196109,"idcardNo":"430223199810267273","mobile":"16689776475","mobileCount":0,"name":"吴凯","queryResult":1,"reportId":"BH2107301838016854417765","reportTime":"2021-07-30 18:38:01"},"bh_bh_report_non_revolving_detail_od":[],"bh_bh_report_finance_lease_day_summary":[{"averageFinLseAmount":0.0,"createTime":"2021-07-30 18:37:55","finLseAmount":0.0,"finLseApplyTenantCount":0,"finLseCompensationAmount":0.0,"finLseCompensationCount":0,"finLseCompensationTimes":0,"finLseCount":0,"finLseTenantCount":0,"id":198817,"maxFinLseAmount":0.0,"overdueFinLseCount":0,"reportId":196109,"type":1},{"averageFinLseAmount":0.0,"createTime":"2021-07-30 18:37:55","finLseAmount":0.0,"finLseApplyTenantCount":0,"finLseCompensationAmount":0.0,"finLseCompensationCount":0,"finLseCompensationTimes":0,"finLseCount":0,"finLseTenantCount":0,"id":198818,"maxFinLseAmount":0.0,"overdueFinLseCount":0,"reportId":196109,"type":2},{"averageFinLseAmount":0.0,"createTime":"2021-07-30 18:37:55","finLseAmount":0.0,"finLseApplyTenantCount":0,"finLseCompensationAmount":0.0,"finLseCompensationCount":0,"finLseCompensationTimes":0,"finLseCount":0,"finLseTenantCount":0,"id":198819,"maxFinLseAmount":0.0,"overdueFinLseCount":0,"reportId":196109,"type":3},{"averageFinLseAmount":0.0,"createTime":"2021-07-30 18:37:55","finLseAmount":0.0,"finLseApplyTenantCount":0,"finLseCompensationAmount":0.0,"finLseCompensationCount":0,"finLseCompensationTimes":0,"finLseCount":0,"finLseTenantCount":0,"id":198820,"maxFinLseAmount":0.0,"overdueFinLseCount":0,"reportId":196109,"type":4}],"bh_bh_report_loan_revolving":{"accountCount":0,"creditLimitSum":0.0,"id":196109,"maxCreditLimitPerTenant":0.0,"maxOverdueStatus":"N","overdueCount":0,"remainingAmount":0.0,"remainingMaxOverdueStatus":"N","remainingOverdueAccountCount":0,"remainingOverdueAmount":0.0,"reportId":196109,"revolvingLastCompensationDate":"","validAccountCount":0},"bh_bh_report_finlse_detail_od":[],"bh_bh_report_query_history_summary":[{"cAQC":0,"cAQI":0,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298219,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":1},{"cAQC":0,"cAQI":0,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298220,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":2},{"cAQC":0,"cAQI":0,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298221,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":3},{"cAQC":2,"cAQI":2,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298222,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":4},{"cAQC":7,"cAQI":5,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298223,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":5},{"cAQC":11,"cAQI":6,"createTime":"2021-07-30 18:37:56","gQC":0,"gQI":0,"id":298224,"pQC":0,"pQI":0,"qLQC":0,"qLQI":0,"reportId":196109,"type":6}],"bh_bh_report_personal_statement":[],"bh_bh_report_loan_non_revolving":{"id":196109,"lastCompensationDate":"","loanCount":4,"maxOverdueStatus":"N","openLoanCount":0,"overdueCount":0,"remainingAmount":0.0,"remainingMaxOverdueStatus":"N","remainingOverdueAmount":0.0,"remainingOverdueLoanCount":0,"reportId":196109},"bh_bh_report_non_revolving_detail_rp24":[{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694432,"nCPS":"/","nPC":"2019-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694433,"nCPS":"/","nPC":"2019-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694434,"nCPS":"/","nPC":"2019-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694435,"nCPS":"/","nPC":"2019-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694436,"nCPS":"/","nPC":"2019-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694437,"nCPS":"/","nPC":"2020-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694438,"nCPS":"/","nPC":"2020-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694439,"nCPS":"/","nPC":"2020-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694440,"nCPS":"/","nPC":"2020-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694441,"nCPS":"/","nPC":"2020-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694442,"nCPS":"/","nPC":"2020-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694443,"nCPS":"/","nPC":"2020-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694444,"nCPS":"/","nPC":"2020-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694445,"nCPS":"/","nPC":"2020-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694446,"nCPS":"/","nPC":"2020-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694447,"nCPS":"/","nPC":"2020-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694448,"nCPS":"/","nPC":"2020-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694449,"nCPS":"/","nPC":"2021-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694450,"nCPS":"/","nPC":"2021-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694451,"nCPS":"/","nPC":"2021-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694452,"nCPS":"/","nPC":"2021-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694453,"nCPS":"/","nPC":"2021-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694454,"nCPS":"/","nPC":"2021-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403935,"id":9694455,"nCPS":"/","nPC":"2021-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694456,"nCPS":"/","nPC":"2019-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694457,"nCPS":"/","nPC":"2019-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694458,"nCPS":"/","nPC":"2019-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694459,"nCPS":"/","nPC":"2019-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694460,"nCPS":"/","nPC":"2019-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694461,"nCPS":"/","nPC":"2020-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694462,"nCPS":"/","nPC":"2020-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694463,"nCPS":"/","nPC":"2020-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694464,"nCPS":"/","nPC":"2020-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694465,"nCPS":"/","nPC":"2020-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694466,"nCPS":"/","nPC":"2020-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694467,"nCPS":"/","nPC":"2020-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694468,"nCPS":"/","nPC":"2020-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694469,"nCPS":"/","nPC":"2020-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694470,"nCPS":"/","nPC":"2020-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694471,"nCPS":"/","nPC":"2020-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694472,"nCPS":"/","nPC":"2020-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694473,"nCPS":"/","nPC":"2021-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694474,"nCPS":"/","nPC":"2021-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694475,"nCPS":"/","nPC":"2021-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694476,"nCPS":"/","nPC":"2021-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694477,"nCPS":"/","nPC":"2021-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694478,"nCPS":"/","nPC":"2021-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403936,"id":9694479,"nCPS":"/","nPC":"2021-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694480,"nCPS":"/","nPC":"2019-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694481,"nCPS":"/","nPC":"2019-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694482,"nCPS":"/","nPC":"2019-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694483,"nCPS":"/","nPC":"2019-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694484,"nCPS":"/","nPC":"2019-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694485,"nCPS":"/","nPC":"2020-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694486,"nCPS":"/","nPC":"2020-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694487,"nCPS":"/","nPC":"2020-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694488,"nCPS":"/","nPC":"2020-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694489,"nCPS":"/","nPC":"2020-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694490,"nCPS":"/","nPC":"2020-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694491,"nCPS":"/","nPC":"2020-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694492,"nCPS":"/","nPC":"2020-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694493,"nCPS":"/","nPC":"2020-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694494,"nCPS":"/","nPC":"2020-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694495,"nCPS":"/","nPC":"2020-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694496,"nCPS":"/","nPC":"2020-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694497,"nCPS":"/","nPC":"2021-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:55","detailId":403937,"id":9694498,"nCPS":"/","nPC":"2021-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403937,"id":9694499,"nCPS":"/","nPC":"2021-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403937,"id":9694500,"nCPS":"/","nPC":"2021-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403937,"id":9694501,"nCPS":"/","nPC":"2021-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403937,"id":9694502,"nCPS":"/","nPC":"2021-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403937,"id":9694503,"nCPS":"/","nPC":"2021-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694504,"nCPS":"/","nPC":"2019-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694505,"nCPS":"/","nPC":"2019-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694506,"nCPS":"/","nPC":"2019-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694507,"nCPS":"/","nPC":"2019-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694508,"nCPS":"/","nPC":"2019-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694509,"nCPS":"/","nPC":"2020-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694510,"nCPS":"/","nPC":"2020-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694511,"nCPS":"/","nPC":"2020-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694512,"nCPS":"/","nPC":"2020-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694513,"nCPS":"/","nPC":"2020-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694514,"nCPS":"/","nPC":"2020-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694515,"nCPS":"/","nPC":"2020-07","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694516,"nCPS":"/","nPC":"2020-08","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694517,"nCPS":"/","nPC":"2020-09","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694518,"nCPS":"/","nPC":"2020-10","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694519,"nCPS":"/","nPC":"2020-11","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694520,"nCPS":"/","nPC":"2020-12","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694521,"nCPS":"/","nPC":"2021-01","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694522,"nCPS":"/","nPC":"2021-02","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694523,"nCPS":"/","nPC":"2021-03","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694524,"nCPS":"/","nPC":"2021-04","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694525,"nCPS":"/","nPC":"2021-05","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694526,"nCPS":"/","nPC":"2021-06","nWOS":"/"},{"createTime":"2021-07-30 18:37:56","detailId":403938,"id":9694527,"nCPS":"/","nPC":"2021-07","nWOS":"/"}],"bh_bh_report_revolving_detail_rp24":[],"bh_bh_report_customer_home":[],"bh_bh_report_non_revolving_detail":[{"createTime":"2021-07-30 18:37:55","id":403935,"nBGT":1,"nBON":"BH0754","nCA":0.0,"nCM":"","nCOA":0.0,"nDD":"2018-09-20","nFRD":"2018-09-20","nLAI":"1809061555021894","nLCA":0.0,"nLCD":"","nLID":"2018-09-06","nLOD":"2018-09-06","nLP":99,"nLRD":"2018-09-20","nLRS":"C","nLS":1504.52,"nOTC":0,"nRCA":0.0,"nTM":"","nTP":14,"nTRT":1,"nTT":1,"nUD":"2018-09-21","reportId":196109},{"createTime":"2021-07-30 18:37:55","id":403936,"nBGT":1,"nBON":"BH0754","nCA":0.0,"nCM":"","nCOA":0.0,"nDD":"2018-09-20","nFRD":"2018-09-20","nLAI":"1809061556021926","nLCA":0.0,"nLCD":"","nLID":"2018-09-06","nLOD":"2018-09-06","nLP":99,"nLRD":"2018-09-20","nLRS":"C","nLS":189.86,"nOTC":0,"nRCA":0.0,"nTM":"","nTP":14,"nTRT":1,"nTT":1,"nUD":"2018-09-21","reportId":196109},{"createTime":"2021-07-30 18:37:55","id":403937,"nBGT":1,"nBON":"BH0754","nCA":0.0,"nCM":"","nCOA":0.0,"nDD":"2018-10-14","nFRD":"2018-10-14","nLAI":"1809300957006629","nLCA":0.0,"nLCD":"","nLID":"2018-09-30","nLOD":"2018-09-30","nLP":99,"nLRD":"2018-10-14","nLRS":"C","nLS":1003.01,"nOTC":0,"nRCA":0.0,"nTM":"","nTP":14,"nTRT":1,"nTT":1,"nUD":"2018-10-15","reportId":196109},{"createTime":"2021-07-30 18:37:56","id":403938,"nBGT":1,"nBON":"BH0754","nCA":0.0,"nCM":"","nCOA":0.0,"nDD":"2018-10-14","nFRD":"2018-10-14","nLAI":"1809301010007201","nLCA":0.0,"nLCD":"","nLID":"2018-09-30","nLOD":"2018-09-30","nLP":99,"nLRD":"2018-10-14","nLRS":"C","nLS":126.57,"nOTC":0,"nRCA":0.0,"nTM":"","nTP":14,"nTRT":1,"nTT":1,"nUD":"2018-10-15","reportId":196109}],"bh_bh_report_loan_non_revolving_day_summary":[{"applyTenantCount":0,"averageLoanAmount":0.0,"compensationAmount":0.0,"compensationCount":0,"compensationTimes":0,"id":784433,"loanAmount":0.0,"loanCount":0,"loanTenantCount":0,"maxLoanAmount":0.0,"overdueLoanCount":0,"reportId":196109,"type":1},{"applyTenantCount":3,"averageLoanAmount":0.0,"compensationAmount":0.0,"compensationCount":0,"compensationTimes":0,"id":784434,"loanAmount":0.0,"loanCount":0,"loanTenantCount":0,"maxLoanAmount":0.0,"overdueLoanCount":0,"reportId":196109,"type":2},{"applyTenantCount":4,"averageLoanAmount":0.0,"compensationAmount":0.0,"compensationCount":0,"compensationTimes":0,"id":784435,"loanAmount":0.0,"loanCount":0,"loanTenantCount":0,"maxLoanAmount":0.0,"overdueLoanCount":0,"reportId":196109,"type":3},{"applyTenantCount":5,"averageLoanAmount":0.0,"compensationAmount":0.0,"compensationCount":0,"compensationTimes":0,"id":784436,"loanAmount":0.0,"loanCount":0,"loanTenantCount":0,"maxLoanAmount":0.0,"overdueLoanCount":0,"reportId":196109,"type":4}],"bh_bh_report_finlse_detail_rp24":[],"bh_bh_report_revolving_detail":[],"bh_bh_report_query_history":[{"date":"2021-06-30","id":2058284,"reason":1,"reportId":196109,"tenantName":"BH4535","tenantType":"","userId":"*"},{"date":"2021-06-30","id":2058285,"reason":1,"reportId":196109,"tenantName":"BH3632","tenantType":"","userId":"*"},{"date":"2021-05-30","id":2058286,"reason":1,"reportId":196109,"tenantName":"BH4535","tenantType":"","userId":"*"},{"date":"2021-05-30","id":2058287,"reason":1,"reportId":196109,"tenantName":"BH3632","tenantType":"","userId":"*"},{"date":"2021-05-30","id":2058288,"reason":1,"reportId":196109,"tenantName":"BH4730","tenantType":"","userId":"*"},{"date":"2021-05-30","id":2058289,"reason":1,"reportId":196109,"tenantName":"BH8923","tenantType":"","userId":"*"},{"date":"2021-05-27","id":2058290,"reason":1,"reportId":196109,"tenantName":"BH1230","tenantType":"","userId":"*"},{"date":"2021-02-16","id":2058291,"reason":1,"reportId":196109,"tenantName":"BH4730","tenantType":"","userId":"*"},{"date":"2021-01-30","id":2058292,"reason":1,"reportId":196109,"tenantName":"BH3632","tenantType":"","userId":"*"},{"date":"2021-01-30","id":2058293,"reason":1,"reportId":196109,"tenantName":"BH1230","tenantType":"","userId":"*"},{"date":"2021-01-29","id":2058294,"reason":1,"reportId":196109,"tenantName":"BH0217","tenantType":"","userId":"*"}],"bh_bh_report_finance_lease_summary":{"createTime":"2021-07-30 18:37:55","finLseCount":0,"finLseCurrRemainingMaxOverdueStatus":"N","finLseCurrRemainingOverdueAmount":0.0,"finLseLastCompensationDate":"","finLseMaxOverdueStatus":"N","finLseOverdueCount":0,"finLseRemainingAmount":0.0,"id":49705,"openFinLseCount":0,"remainingOverdueFinLseCount":0,"reportId":196109},"bh_bh_report_objection_labeling":[],"bh_bh_report_finlse_detail":[]},"shebaoInfo":{"clientNo":"202110131141070731647865","levelInfo":{"creditLevel":"A","incomeLevel":"A","stabilityLevel":"A"},"oldDate":true,"responseCode":100,"responseText":"接口调用成功","result":3,"resultText":"查无结果","serialNo":"6adb1b00-0f87-4a4e-b1f5-43f5e5f412be","version":"v1.0"},"channel":0,"youfenInfo":{"black":{"data":{"statusCode":"2007","statusMsg":"本数据库中未查得"},"resCode":"0000","resMsg":"提交成功"},"risk":{"data":{"result":{"app_bank_biggest_money":"","app_bank_biggest_money_history_day":"","app_bank_biggest_money_recently_day":"","app_bank_counts":"","app_bank_history_day":"","app_bank_recently_day":"","app_bank_small_money":"","app_bank_small_money_history_day":"","app_bank_small_money_recently_day":"","app_biggest_money":"0W~0.2W","app_biggest_money_history_day":"302","app_biggest_money_recently_day":"136","app_counts":"2","app_history_day":"302","app_month":"","app_month12":"2","app_month18":"2","app_month24":"2","app_month3":"","app_month6":"1","app_platform_counts":"2","app_platform_month":"","app_platform_month12":"2","app_platform_month18":"2","app_platform_month24":"2","app_platform_month3":"","app_platform_month6":"1","app_platform_week":"","app_recently_day":"136","app_small_money":"0W~0.2W","app_small_money_history_day":"302","app_small_money_recently_day":"136","app_unbank_biggest_money":"0W~0.2W","app_unbank_biggest_money_history_day":"302","app_unbank_biggest_money_recently_day":"136","app_unbank_counts":"2","app_unbank_history_day":"302","app_unbank_recently_day":"136","app_unbank_small_money":"0W~0.2W","app_unbank_small_money_history_day":"302","app_unbank_small_money_recently_day":"136","app_week":"","arrearage_biggest_money":"","arrearage_counts":"","arrearage_platform_counts":"","arrearage_small_money":"","loan_bank_biggest_money":"","loan_bank_biggest_money_history_day":"","loan_bank_biggest_money_recently_day":"","loan_bank_counts":"","loan_bank_history_day":"","loan_bank_recently_day":"","loan_bank_small_money":"","loan_bank_small_money_history_day":"","loan_bank_small_money_recently_day":"","loan_biggest_money":"0W~0.2W","loan_biggest_money_history_day":"302","loan_biggest_money_recently_day":"302","loan_counts":"1","loan_counts_month":"","loan_counts_month12":"1","loan_counts_month18":"1","loan_counts_month24":"1","loan_counts_month3":"","loan_counts_month6":"","loan_counts_week":"","loan_history_day":"302","loan_platform_counts":"1","loan_platform_month":"","loan_platform_month12":"1","loan_platform_month18":"1","loan_platform_month24":"1","loan_platform_month3":"","loan_platform_month6":"","loan_platform_week":"","loan_recently_day":"302","loan_small_money":"0W~0.2W","loan_small_money_history_day":"302","loan_small_money_recently_day":"302","loan_unbank_biggest_money":"0W~0.2W","loan_unbank_biggest_money_history_day":"302","loan_unbank_biggest_money_recently_day":"302","loan_unbank_counts":"1","loan_unbank_history_day":"302","loan_unbank_recently_day":"302","loan_unbank_small_money":"0W~0.2W","loan_unbank_small_money_history_day":"302","loan_unbank_small_money_recently_day":"302","overdue_biggest_money":"","overdue_biggest_money_history_day":"","overdue_biggest_money_recently_day":"","overdue_counts":"","overdue_history_day":"","overdue_month":"","overdue_month12":"","overdue_month18":"","overdue_month24":"","overdue_month3":"","overdue_month6":"","overdue_platform_counts":"","overdue_platform_month":"","overdue_platform_month12":"","overdue_platform_month18":"","overdue_platform_month24":"","overdue_platform_month3":"","overdue_platform_month6":"","overdue_platform_week":"","overdue_recently_day":"","overdue_small_money":"","overdue_small_money_history_day":"","overdue_small_money_recently_day":"","overdue_week":"","reg_bank_history_day":"","reg_bank_recently_day":"","reg_history_day":"670","reg_platform_counts":"7","reg_platform_month":"1","reg_platform_month12":"6","reg_platform_month18":"6","reg_platform_month24":"7","reg_platform_month3":"1","reg_platform_month6":"4","reg_platform_week":"","reg_recently_day":"25","reg_unbank_history_day":"670","reg_unbank_recently_day":"25","reject_bank_counts":"","reject_bank_history_day":"","reject_bank_recently_day":"","reject_counts":"1","reject_history_day":"136","reject_month":"","reject_month12":"1","reject_month18":"1","reject_month24":"1","reject_month3":"","reject_month6":"1","reject_platform_counts":"1","reject_platform_month":"","reject_platform_month12":"1","reject_platform_month18":"1","reject_platform_month24":"1","reject_platform_month3":"","reject_platform_month6":"1","reject_platform_week":"","reject_recently_day":"136","reject_unbank_counts":"1","reject_unbank_history_day":"136","reject_unbank_recently_day":"136","reject_week":""},"statusCode":"2012","statusMsg":"查询成功"},"resCode":"0000","resMsg":"提交成功"}},"huadaoInfo":{"cODE":"200","dATA":{"d001":"2020-12","d002":"2","d003":"2","d004":"2","d005":"2","d006":"1","d007":"1","d008":"none","d009":"none","d010":"none","d011":"none","d012":"none","d013":"none","d014":"2","d015":"2","d016":"2","d017":"2","d018":"none","d019":"none","d020":"none","d021":"none","d022":"2","d023":"2","d024":"2","d025":"2","d026":"3","d027":"3","d028":"2","d029":"2","d030":"1","d031":"1","d032":"0","d033":"0","d034":"0","d035":"0","d036":"0","d037":"0","d038":"2","d039":"2","d040":"2","d041":"2","d042":"0","d043":"0","d044":"0","d045":"0","d046":"3","d047":"3","d048":"2","d049":"2","d050":"2021-05","d051":"2021-04","d052":"0","d053":"0","d054":"0","d055":"0","d056":"2","d057":"2","d058":"2","d059":"2","d060":"1","d061":"1","d062":"none","d063":"none","d064":"none","d065":"none","d066":"none","d067":"none","d068":"2","d069":"2","d070":"2","d071":"2","d072":"none","d073":"none","d074":"none","d075":"none","d076":"2","d077":"2","d078":"2","d079":"2","d080":"2","d081":"2","d082":"1","d083":"1","d084":"1","d085":"1","d086":"0","d087":"0","d088":"0","d089":"0","d090":"0","d091":"0","d092":"1","d093":"1","d094":"1","d095":"1","d096":"0","d097":"0","d098":"0","d099":"0","d100":"2","d101":"2","d102":"1","d103":"1","d104":"2021-04","d105":"2021-04","d106":"2","d107":"2","d108":"2","d109":"2","d110":"1","d111":"1","d112":"none","d113":"none","d114":"none","d115":"none","d116":"none","d117":"none","d118":"2","d119":"2","d120":"2","d121":"2","d122":"none","d123":"none","d124":"none","d125":"none","d126":"2","d127":"2","d128":"2","d129":"2","d130":"2","d131":"2","d132":"1","d133":"1","d134":"1","d135":"1","d136":"0","d137":"0","d138":"0","d139":"0","d140":"0","d141":"0","d142":"1","d143":"1","d144":"1","d145":"1","d146":"0","d147":"0","d148":"0","d149":"0","d150":"2","d151":"2","d152":"1","d153":"1","d154":"2021-05","d155":"2021-05","d156":"11","d157":"8","d158":"5","d159":"5","d160":"2021-05","d161":"0","d162":"3","d163":"5","d164":"0","d165":"0","d166":"3","d167":"5","d168":"0","d169":"0","d170":"0","d171":"5","d172":"0","d173":"0","d174":"0","d175":"5","d176":"0","d223":"none","d224":"none","d225":"none","d226":"none","d227":"0","d228":"0","d229":"0","d230":"0","d231":"none","d232":"none","d233":"none","d234":"none","d235":"0","d236":"0","d237":"0","d238":"0","d239":"none","d240":"none","d241":"none","d242":"none","d243":"0","d244":"0","d245":"0","d246":"0","d247":"0","d248":"0","d249":"0","d251":"0","d252":"0","d253":"0","d254":"0","d255":"0","d256":"0","d257":"0","d258":"0","d259":"0","d260":"0","d261":"0","d262":"0","d263":"0","d264":"0","d265":"0","d266":"0","d267":"0","d268":"0","d269":"0","d270":"0","d271":"0","d272":"0","d273":"0","d274":"0","d275":"0","d276":"0","d277":"0","d278":"0","d279":"0","d280":"0","d281":"0","d282":"0","d283":"0","d284":"0","d285":"0","d286":"0","d287":"0","d288":"0","d289":"0","d290":"0","d291":"0","d292":"0","d293":"0","d294":"0","d295":"0","d296":"0","d297":"0","d298":"0","d299":"0","d300":"0","d301":"0","d302":"0","d303":"0","d304":"0","d305":"0","d306":"0","d307":"0","d308":"0","d309":"0","d310":"0","d311":"0","d312":"0","d313":"0","d314":"0","d315":"0","d316":"0","d317":"0","d318":"0","d319":"0","d320":"0","d321":"0","d322":"0","d323":"0","d324":"0","d325":"0","d326":"0","d327":"0","d328":"0","d329":"0","d330":"0","d331":"0","d332":"0","d333":"0","d334":"0","d335":"0","d336":"0","d337":"0","d338":"0","d339":"0","d340":"0","d344":"0","d345":"0","d346":"0","d347":"0","d348":"0","d349":"0","d350":"0","d351":"0","d352":"0","d353":"0","d354":"0","d355":"0","d356":"0","d357":"0","d358":"0","d359":"0","d360":"0","d361":"0","d362":"0","d363":"0","d364":"0","d365":"0","d366":"0","d367":"0","d368":"0","d369":"0","d370":"0","d371":"0","d372":"0","d373":"0","d374":"0","d375":"0","d376":"0","d377":"0","d378":"0","d379":"0","d380":"0","d381":"0","d382":"0","d383":"0","d384":"0","d385":"0","d386":"0","d387":"0","d388":"0","d389":"0","d390":"0","d391":"0","d392":"0","d393":"0","d394":"0","d395":"0","d396":"0","d397":"0","d398":"0","d399":"0","d400":"0","d401":"0","d417":"2019-09","d418":"2021-05","d419":"2019-09","d420":"2021-05","d421":"2019-12","d422":"1970-01","d423":"1970-01","d424":"2020-12","d425":"2021-01","d428":"0","d429":"0","d430":"0","d431":"0","d432":"6","d433":"5","d434":"3","d435":"3","d436":"4","d437":"2","d438":"2","d439":"2"},"eXISTS":"1","iDCARD":"430223199810267273","nAME":"吴凯","oldDate":true,"pHONE":"16689776475"},"riskGoRank":[{"hitValue":"8R004","result":10},{"hitValue":"8R005","result":10},{"hitValue":"8R011","result":10},{"hitValue":"8R257X","result":10},{"hitValue":"R1000","result":10},{"hitValue":"R1001","result":10},{"hitValue":"8R707","result":10},{"hitValue":"8R706","result":10},{"hitValue":"2R042","result":10},{"hitValue":"2R043","result":10},{"hitValue":"2R044","result":10},{"hitValue":"2R045","result":10},{"hitValue":"2R046","result":10},{"hitValue":"2R047","result":10},{"hitValue":"2R048","result":10},{"hitValue":"2R049","result":10},{"hitValue":"2R085","result":10},{"hitValue":"2R090","result":10},{"hitValue":"2R091","result":10},{"hitValue":"2R094","result":10},{"hitValue":"2R101","result":10},{"hitValue":"2R102","result":10},{"hitValue":"2R500","result":10},{"hitValue":"2R502","result":5},{"hitValue":"2R503","result":10},{"hitValue":"2R504","result":10},{"hitValue":"2R505","result":10},{"hitValue":"8R053","result":10},{"hitValue":"8R054","result":10},{"hitValue":"8R055","result":10},{"hitValue":"8R056","result":10},{"hitValue":"8R156","result":10},{"hitValue":"R803","result":10},{"hitValue":"R500","result":10},{"hitValue":"R797","result":10},{"hitValue":"R900","result":10},{"hitValue":"R1006","result":5},{"hitValue":"R1002","result":10},{"hitValue":"R1003","result":10},{"hitValue":"R1008","result":5},{"hitValue":"R1009","result":10},{"hitValue":"R1010","result":10},{"hitValue":"R901","result":10},{"hitValue":"R1012","result":5},{"hitValue":"R1013","result":10},{"hitValue":"8R012","result":10},{"hitValue":"8R013","result":10},{"hitValue":"8R014","result":10},{"hitValue":"8R029","result":10},{"hitValue":"8R017","result":10},{"hitValue":"8R015","result":10},{"hitValue":"8R022","result":10},{"hitValue":"8R023","result":10},{"hitValue":"8R113","result":10},{"hitValue":"8R700","result":10},{"hitValue":"8R701","result":10},{"hitValue":"8R702","result":10},{"hitValue":"8R703","result":10},{"hitValue":"8R704","result":10},{"hitValue":"8R258","result":10},{"hitValue":"8R257","result":10},{"hitValue":"8R318","result":10},{"hitValue":"8R303","result":10},{"hitValue":"8R708","result":10},{"hitValue":"8R401","result":10},{"hitValue":"2R501","result":10},{"hitValue":"8R260","result":10},{"hitValue":"8R265","result":10},{"hitValue":"8R600","result":5}],"jingdongInfo":{"code":"1000","data":{"asset_score":"69.623846","business_travel":"-1","buyingIndex":"40","car_score":"-1","cd_level":"2","cellphonePreference":"4","city":"深圳市","comsumingSocial":"40","consume_cnt_freq":"5","consume_m_freq":"5","credit_consume_level":"1","debt_bearing_level":"6","dec_ord_freq":"1","ecommerceAddressStability":"2","ecommercecellphoneStability":"5","gd_level":"1","have_child":"30.794295","house_score":"62.236556","income_score":"79.015385","liability_level":"1","mal_ord_freq":"1","max_dlq_days_all_180_level":"1","max_dlq_days_all_30_level":"1","max_dlq_days_all_365_level":"1","max_dlq_days_all_60_level":"1","max_dlq_days_all_90_level":"1","pay_preference":"4","performance_score":"73.791706","pur_preference":"3, 1, 2, 6, 14","resonableConsuming":"73.62","riskCategoryConsuming":"12.5","riskIndex":"21.9","riskPeriodConsuming":"28.8","risk_pre_level":"-1","risk_pre_score":"-1","stability":"1","time_on_book":"2","tob_rank":"3","tot_180_amt_level":"1","tot_180_cnt_level":"1","tot_180_m_cnt_level":"1","tot_30_amt_level":"1","tot_30_cnt_level":"1","tot_365_amt_level":"1","tot_365_cnt_level":"1","tot_365_m_cnt_level":"1","tot_60_amt_level":"1","tot_60_cnt_level":"1","tot_90_amt_level":"1","tot_90_cnt_level":"1","tot_charge_180_amt_level":"1","tot_charge_180_cnt_level":"1","tot_charge_30_amt_level":"1","tot_charge_30_cnt_level":"1","tot_charge_365_amt_level":"1","tot_charge_365_cnt_level":"1","tot_charge_60_amt_level":"1","tot_charge_60_cnt_level":"1","tot_charge_90_amt_level":"1","tot_charge_90_cnt_level":"1","tot_dlq_days_all_180_level":"1","tot_dlq_days_all_30_level":"1","tot_dlq_days_all_365_level":"1","tot_dlq_days_all_60_level":"1","tot_dlq_days_all_90_level":"1","worktimeShopping":"19.4"},"msg":"调用成功,有效数据","oldDate":true},"ruleInfo":{"8R401":20,"8R029":10,"R1012":10},"mongoInfo":[{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-31 09:28:54","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-31 09:28:49","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-31 09:28:47","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-31 09:28:47","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-31 09:28:35","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":2,"eventCode":"200004","createTime":"2021-07-31 09:28:07","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675079","businessChannel":11,"mobileSystem":"android","lng":"113.97846","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-31 09:27:59","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-31 09:27:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-31 09:27:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-31 09:27:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-31 09:27:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-31 09:27:33","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-31 09:27:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-31 09:27:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-31 09:25:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-31 09:25:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-31 09:25:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-31 09:25:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-31 09:24:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 22:11:07","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 22:11:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 22:11:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 22:10:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 22:10:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 21:31:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 21:31:26","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 21:31:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 19:17:07","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 19:17:05","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 19:17:05","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 19:17:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 19:17:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 19:16:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 19:16:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 19:16:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 19:16:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 19:16:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 19:16:28","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 19:16:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 19:16:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 19:16:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 19:16:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.22","eventType":1,"eventCode":"100003","createTime":"2021-07-30 18:30:28","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.22","eventType":2,"eventCode":"200005","createTime":"2021-07-30 18:30:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.22","eventType":1,"eventCode":"100006","createTime":"2021-07-30 18:30:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.22","eventType":1,"eventCode":"100003","createTime":"2021-07-30 18:30:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.22","eventType":1,"eventCode":"100001","createTime":"2021-07-30 18:30:18","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"NONE","businessChannel":11,"mobileSystem":"android","ip":"112.97.50.174","eventType":1,"eventCode":"100006","createTime":"2021-07-30 18:28:03","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 18:16:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 18:16:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 18:16:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 18:16:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:50:03","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 16:49:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 16:49:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:49:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:49:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:35:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-30 16:35:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:34:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:34:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:34:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:34:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:30:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 16:29:59","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 16:29:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:29:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:29:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:29:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:12:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 16:12:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 16:12:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:12:32","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:12:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 16:12:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 16:12:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 15:04:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 15:04:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 15:04:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 15:03:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 15:03:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 15:03:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 15:03:37","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 15:03:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 14:19:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 14:19:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 14:19:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 14:19:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 14:19:06","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100006","createTime":"2021-07-30 13:24:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":2,"eventCode":"200005","createTime":"2021-07-30 13:24:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100006","createTime":"2021-07-30 13:23:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":2,"eventCode":"200005","createTime":"2021-07-30 13:23:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100003","createTime":"2021-07-30 13:23:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100001","createTime":"2021-07-30 13:23:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:29:50","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:29:50","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:29:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"4G","businessChannel":11,"mobileSystem":"android","ip":"112.97.52.206","eventType":1,"eventCode":"100001","createTime":"2021-07-30 12:29:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:11:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:11:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:11:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:10:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:10:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:08:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:08:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:08:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:08:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:07:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:07:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:06:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:06:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:06:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:06:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:06:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:06:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:06:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:06:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:06:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:06:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:05:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:05:23","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:05:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:05:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 12:05:18","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 12:05:18","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 12:05:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 12:05:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:53:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 11:53:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 11:53:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:53:34","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 11:53:34","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:45:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 11:45:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 11:45:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:45:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:45:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:15:00","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 11:14:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 11:14:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 11:14:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 11:14:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:51:20","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:51:12","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:51:12","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:34:46","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:34:45","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:34:31","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:34:20","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:34:20","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:34:14","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:32:59","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:32:58","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:32:29","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:25:18","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:25:18","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:25:08","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:25:06","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:25:05","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:25:02","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:25:02","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:24:51","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:24:37","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:24:23","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:24:19","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:24:18","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:24:11","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:24:10","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:59","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:23:59","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:52","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:23:52","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:41","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:31","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:23:30","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:23:28","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:23","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:23:17","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:23:17","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:22:55","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:22:54","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:22:46","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:22:46","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:22:36","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:22:35","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:21:53","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:21:51","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:21:49","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-30 09:21:48","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:21:44","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.67506","businessChannel":11,"mobileSystem":"android","lng":"113.978391","ip":"58.250.250.59","eventType":2,"eventCode":"200004","createTime":"2021-07-30 09:21:08","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:20:58","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-30 09:20:56","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-30 09:20:53","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:20:51","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-30 09:20:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-30 09:20:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:20:46","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:20:39","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:20:25","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:20:19","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:20:17","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":2,"eventCode":"200004","createTime":"2021-07-30 09:19:44","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.675144","businessChannel":11,"mobileSystem":"android","lng":"113.978351","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:19:04","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道深圳梅华公寓恒大·时尚慧谷"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-30 09:19:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:18:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:18:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:18:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:18:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-30 09:18:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-30 09:18:19","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:18:13","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:18:02","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:17:55","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:17:55","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:17:52","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:17:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"7yMNSR8AAbJyFxzedEGefcMr3X67CmYh","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":7,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:17:34","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:17:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:17:23","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-30 09:17:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:17:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-30 09:17:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:17:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-30 09:17:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:16:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-30 09:16:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-30 09:16:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:16:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-30 09:16:40","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:16:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:15:58","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:15:55","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:15:55","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:15:44","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:15:40","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:15:40","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:15:37","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:15:37","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:13:48","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:13:38","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:13:37","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:13:31","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:13:31","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:13:18","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:12:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:12:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:12:47","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:12:46","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:12:44","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:12:42","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-30 09:12:42","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:12:12","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677871","businessChannel":23,"mobileSystem":"android","lng":"113.973516","ip":"58.250.250.59","eventType":2,"eventCode":"200004","createTime":"2021-07-30 09:12:09","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:11:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-30 09:11:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-30 09:11:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-30 09:11:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200002","createTime":"2021-07-30 09:11:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:11:22","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-30 09:11:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:11:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:11:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:08:50","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:08:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:08:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:08:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-30 09:08:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-30 09:05:23","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-30 09:04:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-30 09:04:07","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 09:04:03","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:04:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 09:03:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 09:03:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 09:03:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 08:55:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-30 08:55:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-30 08:55:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-30 08:55:40","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-30 08:55:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 22:01:59","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 22:01:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 22:01:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 22:01:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 22:01:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 22:00:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 22:00:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 22:00:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 21:47:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 21:47:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 21:47:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 21:47:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 21:47:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 20:44:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 20:44:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 20:44:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 20:44:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 20:44:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:23:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:23:37","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 19:23:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:03:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:02:59","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 19:02:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 19:02:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:02:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 19:02:18","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 19:02:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:02:13","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 19:02:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 19:02:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 19:01:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 19:01:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:01:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:01:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 19:01:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-29 19:00:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-29 19:00:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 19:00:26","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 19:00:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 19:00:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 19:00:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:59:53","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:59:33","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 18:59:27","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:59:26","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:52:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:52:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-29 18:52:23","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-29 18:51:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-29 18:51:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:51:40","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 18:51:38","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:51:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:50:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:41:21","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 18:41:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 18:41:13","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 18:41:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:41:07","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 18:40:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 18:40:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 18:40:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 17:33:13","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 17:32:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 17:31:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-29 17:31:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-29 17:31:45","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-29 17:31:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-29 17:31:40","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 22:43:06","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 22:42:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-28 22:42:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 22:42:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 22:42:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"4G","businessChannel":23,"mobileSystem":"android","ip":"112.97.60.217","eventType":1,"eventCode":"100003","createTime":"2021-07-28 15:18:28","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"4G","businessChannel":23,"mobileSystem":"android","ip":"112.97.60.217","eventType":1,"eventCode":"100006","createTime":"2021-07-28 15:18:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"4G","businessChannel":23,"mobileSystem":"android","ip":"112.97.60.217","eventType":2,"eventCode":"200005","createTime":"2021-07-28 15:18:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"4G","businessChannel":23,"mobileSystem":"android","ip":"112.97.60.217","eventType":1,"eventCode":"100001","createTime":"2021-07-28 15:18:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"4G","businessChannel":23,"mobileSystem":"android","ip":"112.97.60.217","eventType":1,"eventCode":"100003","createTime":"2021-07-28 15:18:10","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 13:01:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 13:01:32","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 13:01:32","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 13:01:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 13:01:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-28 13:01:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 13:01:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200010","createTime":"2021-07-28 13:00:50","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-28 13:00:50","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-28 13:00:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 13:00:37","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 13:00:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 13:00:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-28 13:00:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:59:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:59:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:59:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:58:05","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-28 12:58:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 12:57:59","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 12:57:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 12:57:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-28 12:57:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-28 12:57:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-28 12:57:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 12:57:01","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200005","createTime":"2021-07-28 12:56:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:56:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100003","createTime":"2021-07-28 12:56:48","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 12:56:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677936","businessChannel":23,"mobileSystem":"android","lng":"113.973273","ip":"58.250.250.59","eventType":1,"eventCode":"100006","createTime":"2021-07-28 12:54:30","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","lat":"22.677936","businessChannel":23,"mobileSystem":"android","lng":"113.973273","ip":"58.250.250.59","eventType":2,"eventCode":"200004","createTime":"2021-07-28 12:53:50","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区大浪街道龙华交警大队扣车场"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 12:52:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200003","createTime":"2021-07-28 12:52:25","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-28 12:52:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":3,"eventCode":"300001","createTime":"2021-07-28 12:51:19","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-28 12:51:02","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":2,"eventCode":"200001","createTime":"2021-07-28 12:49:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100005","createTime":"2021-07-28 12:49:19","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":4,"eventCode":"400001","createTime":"2021-07-28 12:49:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"o0zNr5I98-xAQQmzJULoVLmh7A3o","mobileVersion":"Android 10","uuid":"xf6naE8txbJRwMPancw6dZawynEnAs5X","mobileBrand":"SAMSUNG","mobileModel":"SM-N960U","net":"WIFI","businessChannel":23,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 12:49:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"58.250.250.59","eventType":1,"eventCode":"100001","createTime":"2021-07-28 12:48:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":3,"eventCode":"300001","createTime":"2021-07-27 12:33:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":1,"eventCode":"100001","createTime":"2021-07-27 12:33:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":2,"eventCode":"200001","createTime":"2021-07-27 12:33:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":2,"eventCode":"200001","createTime":"2021-07-27 12:33:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":2,"eventCode":"200001","createTime":"2021-07-27 12:32:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":1,"eventCode":"100005","createTime":"2021-07-27 12:31:47","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":4,"eventCode":"400001","createTime":"2021-07-27 12:31:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":1,"eventCode":"100001","createTime":"2021-07-27 12:31:37","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"112.95.173.94","eventType":1,"eventCode":"100001","createTime":"2021-07-27 12:31:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 06:27:32","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 06:27:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 06:24:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-21 06:24:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100005","createTime":"2021-07-21 06:24:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200010","createTime":"2021-07-21 06:24:41","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 06:24:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 06:24:13","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 06:24:07","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 06:23:52","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100003","createTime":"2021-07-21 02:25:46","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100003","createTime":"2021-07-21 02:25:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100006","createTime":"2021-07-21 02:23:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200005","createTime":"2021-07-21 02:23:35","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100006","createTime":"2021-07-21 02:22:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200005","createTime":"2021-07-21 02:22:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100006","createTime":"2021-07-21 02:22:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200005","createTime":"2021-07-21 02:22:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100003","createTime":"2021-07-21 02:22:18","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 02:22:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.626075","businessChannel":11,"mobileSystem":"android","lng":"114.036754","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 02:21:24","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区民治街道宜水居公寓塘水围2区"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.626075","businessChannel":11,"mobileSystem":"android","lng":"114.036754","ip":"27.38.141.134","eventType":2,"eventCode":"200010","createTime":"2021-07-21 02:21:23","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区民治街道宜水居公寓塘水围2区"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.626075","businessChannel":11,"mobileSystem":"android","lng":"114.036754","ip":"27.38.141.134","eventType":1,"eventCode":"100006","createTime":"2021-07-21 02:21:08","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区民治街道宜水居公寓塘水围2区"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.626075","businessChannel":11,"mobileSystem":"android","lng":"114.036754","ip":"27.38.141.134","eventType":2,"eventCode":"200004","createTime":"2021-07-21 02:20:38","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区民治街道宜水居公寓塘水围2区"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 02:20:33","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200003","createTime":"2021-07-21 02:20:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:20:27","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-21 02:20:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200010","createTime":"2021-07-21 02:20:19","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100005","createTime":"2021-07-21 02:20:19","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":4,"eventCode":"400001","createTime":"2021-07-21 02:20:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 02:20:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100003","createTime":"2021-07-21 02:20:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100003","createTime":"2021-07-21 02:20:06","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 02:20:05","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","lat":"22.626075","businessChannel":11,"mobileSystem":"android","lng":"114.036754","ip":"27.38.141.134","eventType":2,"eventCode":"200004","createTime":"2021-07-21 02:19:40","ipProvince":"广东省","locationAddr":"广东省深圳市龙华区民治街道宜水居公寓塘水围2区"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 02:19:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200003","createTime":"2021-07-21 02:19:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:18:59","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:18:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:18:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:18:56","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 02:16:42","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:16:34","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-21 02:16:31","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100005","createTime":"2021-07-21 02:16:30","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 02:16:27","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200010","createTime":"2021-07-21 02:16:24","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-21 02:16:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200003","createTime":"2021-07-21 02:16:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-21 02:16:15","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-21 02:16:09","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100005","createTime":"2021-07-21 02:16:08","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":4,"eventCode":"400001","createTime":"2021-07-21 02:16:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-21 02:15:57","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-20 23:18:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-20 23:18:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-20 23:18:12","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-20 23:17:36","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200010","createTime":"2021-07-20 23:17:32","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":3,"eventCode":"300001","createTime":"2021-07-20 23:17:06","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200003","createTime":"2021-07-20 23:17:04","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-20 23:16:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-20 23:16:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200002","createTime":"2021-07-20 23:16:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":2,"eventCode":"200001","createTime":"2021-07-20 23:16:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100005","createTime":"2021-07-20 23:16:39","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"27.38.141.134","eventType":1,"eventCode":"100001","createTime":"2021-07-20 23:16:29","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-19 13:03:34","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":4,"eventCode":"400001","createTime":"2021-07-19 12:34:17","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":3,"eventCode":"300001","createTime":"2021-07-19 12:33:00","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-19 12:32:58","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100005","createTime":"2021-07-19 12:32:51","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-19 12:32:43","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":3,"eventCode":"300001","createTime":"2021-07-18 13:38:16","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-18 13:38:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":2,"eventCode":"200002","createTime":"2021-07-18 13:38:00","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":2,"eventCode":"200001","createTime":"2021-07-18 13:37:55","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100005","createTime":"2021-07-18 13:37:54","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":3,"eventCode":"300001","createTime":"2021-07-18 13:37:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-18 13:37:49","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100005","createTime":"2021-07-18 13:37:44","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":3,"eventCode":"300001","createTime":"2021-07-18 13:37:27","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":1,"eventCode":"100001","createTime":"2021-07-18 13:37:26","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":3,"eventCode":"300001","createTime":"2021-07-18 13:37:20","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":2,"eventCode":"200002","createTime":"2021-07-18 13:37:14","ipProvince":"广东省"},{"appVersion":"0.0.1","timeLong":0,"ipCity":"深圳市","openId":"2088712359801808","mobileVersion":"10","uuid":"kQCrQeHHFn5cYtBAdY7w7SdJkmSCsHTa","mobileBrand":"SAMSUNG","mobileModel":"SAMSUNG SM-N960U","net":"WIFI","businessChannel":11,"mobileSystem":"android","ip":"163.125.39.94","eventType":2,"eventCode":"200002","createTime":"2021-07-18 13:37:13","ipProvince":"广东省"}],"bhphInfo":{"scoreID":"5623363072","score":"623","reason":"","oldDate":true,"costType":2,"costAmount":1.3},"applyInfo":{"receiverAddress":"广东省深圳市龙华区白云山新村50栋901","totalAmount":10956.40,"amount":10956.40,"loanNo":"21073109281912371555","monthAmount":12,"mobile":"16689776475","name":"吴凯","receiverMobile":"16689776475","idCardAddress":"湖南省攸县联星街道雪花社区翻身巷15号附203号","idcardNo":"430223199810267273","businessChannel":11,"loan_time":"2021-07-31 09:28:34"},"xinyanInfo":{"data":{"code":"0","desc":"查询成功","fee":"Y","id_name":"119479f7926108f02db4c0a11129b938","id_no":"e000b97edb6a8a4b7c807e99c5ae9555","result_detail":{"apply_report_detail":{"a22160001":"623","a22160002":"75","a22160003":"16","a22160004":"7","a22160005":"8","a22160006":"24","a22160007":"2021-07","a22160008":"3","a22160009":"9","a22160010":"13"},"behavior_report_detail":{"b22170001":"605","b22170002":"0","b22170003":"0","b22170004":"1","b22170005":"1","b22170006":"1","b22170007":"0","b22170008":"0","b22170009":"[3000,5000)","b22170010":"[3000,5000)","b22170011":"[3000,5000)","b22170012":"0","b22170013":"1","b22170014":"0","b22170015":"0","b22170016":"0","b22170017":"0","b22170018":"1","b22170019":"1","b22170020":"1","b22170021":"1","b22170022":"1","b22170023":"0","b22170024":"0","b22170025":"0","b22170026":"0","b22170027":"0","b22170028":"0","b22170029":"0","b22170030":"0","b22170031":"0","b22170032":"0","b22170033":"0","b22170034":"100%","b22170035":"0","b22170036":"0","b22170037":"0","b22170038":"0","b22170039":"0","b22170040":"[500,1000)","b22170041":"[1000,2000)","b22170042":"[1000,2000)","b22170043":"[1000,2000)","b22170044":"[1000,2000)","b22170045":"1","b22170046":"2","b22170047":"3","b22170048":"3","b22170049":"3","b22170050":"(15,30]","b22170051":"85","b22170052":"1","b22170053":"98","b22170054":"2021-04"},"current_report_detail":{"c22180001":"0","c22180002":"0","c22180003":"0","c22180004":"0","c22180005":"0","c22180006":"0","c22180007":"1","c22180008":"2","c22180009":"3600","c22180010":"3600","c22180011":"3600","c22180012":"85"}},"trade_no":"20210721022252102000009855734000","trans_id":"202107210222510511579492","versions":"2.1.0"},"oldDate":true,"success":true}}
+
+from time import *
+begin_time = time()
+
+a = runMain(request_body=request_body, channel=0)
+
+end_time = time()
+run_time = end_time-begin_time
+print(begin_time)
+print(end_time)
+print ('该循环程序运行时间：',run_time) #该循环程序运行时间： 1.4201874732
+print(a)
+
+
+
